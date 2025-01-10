@@ -1,0 +1,67 @@
+# Copyright 2024 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: publish-charm
+
+on:
+  workflow_call:
+    inputs:
+      track-name:
+        default: latest
+        description: Name of the charmhub track to publish the charm to
+        type: string
+      branch-name:
+        default:
+        description: An additional branch name to add to the track
+        type: string
+    secrets:
+      CHARMCRAFT_AUTH:
+        required: true
+
+jobs:
+  publish-charm:
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Fetch Tested Charm
+        uses: actions/download-artifact@v4
+        with:
+          name: built-charm
+
+      - name: Get Charm Under Test Path
+        id: charm-path
+        run: echo "charm_path=$(find . -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
+
+      - name: Install charmcraft
+        run: sudo snap install charmcraft --classic
+
+      - name: Sanitize the branch variable
+        id: sanitize
+        run: |
+          echo sanitized=$(echo ${{ inputs.branch-name }} | sed 's/[/_.]/-/g' | sed "s/^/\//") >> $GITHUB_OUTPUT
+        if: ${{inputs.branch-name}} != ""
+
+      - name: Upload charm to Charmhub
+        uses: canonical/charming-actions/upload-charm@2.6.3
+        with:
+          built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
+          credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          channel: ${{ inputs.track-name }}/edge${{ steps.sanitize.outputs.sanitized }}
+
+      - name: Publish libs
+        uses: canonical/charming-actions/release-libraries@2.6.3
+        with:
+          credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+
+      - name: Archive charmcraft logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: charmcraft-logs
+          path: /home/runner/.local/state/charmcraft/log/*.log
