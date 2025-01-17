@@ -52,6 +52,21 @@ jobs:
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
           channel: ${{ inputs.track-name }}/edge${{ steps.sanitize.outputs.sanitized }}
+        if: ${{inputs.track-name}} != ""
+
+      - name: Select Charmhub channel
+        uses: canonical/charming-actions/channel@2.6.3
+        id: channel
+        if: ${{inputs.track-name}} == ""
+
+      - name: Upload charm to Charmhub
+        uses: canonical/charming-actions/upload-charm@2.6.3
+        with:
+          built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
+          credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
+          github-token: "${{ secrets.GITHUB_TOKEN }}"
+          channel: ${{ steps.channel.outputs.channel }}
+        if: ${{inputs.track-name}} == ""
 
       - name: Publish libs
         uses: canonical/charming-actions/release-libraries@2.6.3
