@@ -7,7 +7,6 @@ on:
   workflow_call:
     inputs:
       track-name:
-        default: latest
         description: Name of the charmhub track to publish the charm to
         type: string
       branch-name:
