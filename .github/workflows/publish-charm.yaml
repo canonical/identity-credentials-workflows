@@ -40,8 +40,10 @@ jobs:
 
       - name: Sanitize the branch variable
         id: sanitize
+        env:
+          BRANCH_NAME: ${{ inputs.branch-name }}
         run: |
-          echo sanitized=$(echo ${{ inputs.branch-name }} | sed 's/[/_.]/-/g' | sed "s/^/\//") >> $GITHUB_OUTPUT
+          echo sanitized=$(echo "$BRANCH_NAME" | sed 's/[/_.]/-/g' | sed "s/^/\//") >> $GITHUB_OUTPUT
         if: ${{ inputs.branch-name != '' }}
 
       - name: Upload charm to Charmhub
