@@ -66,7 +66,7 @@ jobs:
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-          channel: ${{ steps.channel.outputs.channel }}
+          channel: ${{ steps.channel.outputs.name }}
         if: ${{ inputs.track-name == '' }}
 
       - name: Publish libs
