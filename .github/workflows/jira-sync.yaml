@@ -1,8 +1,7 @@
 name: Issues to JIRA
 
 on:
-  issues:
-    types: [opened, reopened, closed]
+  workflow_call:
 
 jobs:
   update:
