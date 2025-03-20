@@ -18,11 +18,10 @@ jobs:
       - name: Install uv
         run: sudo snap install --classic astral-uv
       
-      - name: Change to the charm's root directory
-        run: cd ${{ github.event.inputs.path }}
-
       - name: Install tox
         run: uv tool install tox --with tox-uv
 
       - name: Run tests using tox
-        run: tox -e unit
+        run: |
+          cd ${{ github.event.inputs.path }}
+          tox -e unit
