@@ -23,5 +23,5 @@ jobs:
 
       - name: Run tests using tox
         run: |
-          cd ${{ github.event.inputs.path }}
+          cd ${{ inputs.path }}
           tox -e static
