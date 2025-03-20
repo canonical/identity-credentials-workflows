@@ -25,4 +25,4 @@ jobs:
         run: go install github.com/grafana/dashboard-linter@latest
 
       - name: Run Grafana Dashboard Lint
-        run: dashboard-linter lint ${{ github.event.inputs.path }} --strict -c grafana.lint
+        run: dashboard-linter lint ${{ inputs.path }} --strict -c grafana.lint
