@@ -18,8 +18,10 @@ jobs:
       - name: Install uv
         run: sudo snap install --classic astral-uv
 
+      - name: Install tox
+        run: uv tool install tox --with tox-uv
+
       - name: Run tests using tox
         run: |
           cd ${{ inputs.path }}
-          uv tool install tox --with tox-uv
           tox -e lint
