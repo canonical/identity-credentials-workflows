@@ -2,6 +2,12 @@ name: Lint report
 
 on:
   workflow_call:
+    inputs:
+      path:
+        description: Path to the charm's root directory
+        required: false
+        type: string
+        default: .
 
 jobs:
   lint-report:
@@ -11,6 +17,9 @@ jobs:
 
       - name: Install uv
         run: sudo snap install --classic astral-uv
+
+      - name: Change to the charm's root directory
+        run: cd ${{ github.event.inputs.path }}
 
       - name: Install tox
         run: uv tool install tox --with tox-uv
