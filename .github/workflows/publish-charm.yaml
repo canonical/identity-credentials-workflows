@@ -13,6 +13,10 @@ on:
         default: ""
         description: An additional branch name to add to the track
         type: string
+      artifact-name:
+        default: built-charm
+        description: Name of the artifact to download
+        type: string
     secrets:
       CHARMCRAFT_AUTH:
         required: true
@@ -29,7 +33,7 @@ jobs:
       - name: Fetch Tested Charm
         uses: actions/download-artifact@v4
         with:
-          name: built-charm
+          name: ${{ inputs.artifact-name }}
 
       - name: Get Charm Under Test Path
         id: charm-path
