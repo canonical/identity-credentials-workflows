@@ -44,6 +44,9 @@ jobs:
         id: charm-path
         run: echo "charm_path=$(find . -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
 
+      - name: Move built charm to charm directory
+        run: mv ${{ steps.charm-path.outputs.charm_path }} ${{ inputs.path }}
+
       - name: Install charmcraft
         run: sudo snap install charmcraft --classic
 
