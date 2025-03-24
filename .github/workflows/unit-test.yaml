@@ -2,6 +2,12 @@ name: Unit tests
 
 on:
   workflow_call:
+    inputs:
+      path:
+        description: Path to the charm's root directory
+        required: false
+        type: string
+        default: ./
 
 jobs:
   unit-tests:
@@ -11,9 +17,11 @@ jobs:
 
       - name: Install uv
         run: sudo snap install --classic astral-uv
-
+      
       - name: Install tox
         run: uv tool install tox --with tox-uv
 
       - name: Run tests using tox
-        run: tox -e unit
+        run: |
+          cd ${{ inputs.path }}
+          tox -e unit

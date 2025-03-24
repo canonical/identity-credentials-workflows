@@ -2,6 +2,12 @@ name: Lint report
 
 on:
   workflow_call:
+    inputs:
+      path:
+        description: Path to the charm's root directory
+        required: false
+        type: string
+        default: ./
 
 jobs:
   lint-report:
@@ -16,4 +22,6 @@ jobs:
         run: uv tool install tox --with tox-uv
 
       - name: Run tests using tox
-        run: tox -e lint
+        run: |
+          cd ${{ inputs.path }}
+          tox -e lint
