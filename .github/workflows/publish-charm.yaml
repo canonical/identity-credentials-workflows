@@ -86,6 +86,7 @@ jobs:
       - name: Publish libs
         uses: canonical/charming-actions/release-libraries@2.6.3
         with:
+          charm-path: ${{ inputs.path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
