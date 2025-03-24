@@ -6,6 +6,11 @@ name: publish-charm
 on:
   workflow_call:
     inputs:
+      path:
+        description: Path to the charm's root directory
+        required: false
+        type: string
+        default: ./
       track-name:
         description: Name of the charmhub track to publish the charm to
         type: string
@@ -53,6 +58,7 @@ jobs:
       - name: Upload charm to Charmhub
         uses: canonical/charming-actions/upload-charm@2.6.3
         with:
+          charm-path: ${{ inputs.path }}
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
@@ -67,6 +73,7 @@ jobs:
       - name: Upload charm to Charmhub
         uses: canonical/charming-actions/upload-charm@2.6.3
         with:
+          charm-path: ${{ inputs.path }}
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
