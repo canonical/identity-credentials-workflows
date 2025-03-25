@@ -6,6 +6,11 @@ name: publish-charm
 on:
   workflow_call:
     inputs:
+      path:
+        description: Path to the charm's root directory
+        required: false
+        type: string
+        default: ./
       track-name:
         description: Name of the charmhub track to publish the charm to
         type: string
@@ -39,6 +44,9 @@ jobs:
         id: charm-path
         run: echo "charm_path=$(find . -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
 
+      - name: Move built charm to charm directory
+        run: mv ${{ steps.charm-path.outputs.charm_path }} ${{ inputs.path }}
+
       - name: Install charmcraft
         run: sudo snap install charmcraft --classic
 
@@ -53,6 +61,7 @@ jobs:
       - name: Upload charm to Charmhub
         uses: canonical/charming-actions/upload-charm@2.6.3
         with:
+          charm-path: ${{ inputs.path }}
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
@@ -67,6 +76,7 @@ jobs:
       - name: Upload charm to Charmhub
         uses: canonical/charming-actions/upload-charm@2.6.3
         with:
+          charm-path: ${{ inputs.path }}
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
@@ -76,6 +86,7 @@ jobs:
       - name: Publish libs
         uses: canonical/charming-actions/release-libraries@2.6.3
         with:
+          charm-path: ${{ inputs.path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
           github-token: "${{ secrets.GITHUB_TOKEN }}"
 
