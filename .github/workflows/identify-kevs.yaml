@@ -1,0 +1,48 @@
+name: Identify KEVs
+
+on:
+  workflow_call:
+    inputs:
+      repo:
+        required: true
+        type: string
+
+jobs:
+  identify-kevs:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Identify KEVs
+        run: |
+          set -e
+
+          echoerr() { printf "%s\n" "$*" >&2; }
+
+          echoerr "Downloading code scanning alerts from GitHub"
+          curl --fail -L -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN}}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" https://api.github.com/repos/${{ inputs.repo }}/code-scanning/alerts > alerts.json
+
+          # Get the CVEs from the current alerts
+          current_cves=$(jq -r '.[] | select(.state == "open") | select(.rule.id | startswith("CVE")) | .rule.id' alerts.json)
+          if [[ -z "$current_cves" ]]; then
+            echoerr "No open CVEs found in the current alerts"
+            exit 0
+          fi
+          echoerr "Found $(wc -l <<<"$current_cves") CVEs currently open on repository"
+
+          # Get the list of KEV CVEs
+          echoerr "Downloading known exploited vulnerabilities"
+          curl --fail -L https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json > known_exploited_vulnerabilities.json
+
+          kevs=$(jq -r '.vulnerabilities.[].cveID' known_exploited_vulnerabilities.json)
+          echoerr "Found $(wc -l <<<"$kevs") KEV CVEs"
+
+          # Compare the lists of CVEs and output any common CVEs
+          common_cves=$(comm -12 <(sort <<< "$current_cves") <(sort <<< "$kevs"))
+          if [[ -z "$common_cves" ]]; then
+            echoerr "No open CVEs were found in the database of known exploited vulnerabilities"
+            exit 0
+          fi
+
+          echo "$common_cves"
+          exit 1
