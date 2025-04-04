@@ -16,7 +16,7 @@ jobs:
         with:
           repository: canonical/identity-credentials-workflows
           path: identity-credentials-workflows
-          ref: ${{ github.ref}}  # Make sure to use the same ref as the calling workflow, so that we're getting the code from the same commit as the yaml.
+          ref: ${{ github.workflow_sha}}  # Make sure to use the same ref as the calling workflow, so that we're getting the code from the same commit as the yaml.
       # NOTE: stderr is redirected to /dev/null to avoid leaking information to
       # public workflow output but the scripts can still be used locally to debug
       - name: Identify CVEs in KEV Database
