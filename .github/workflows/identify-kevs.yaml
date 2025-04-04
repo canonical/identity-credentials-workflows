@@ -3,9 +3,10 @@ name: Identify KEVs
 on:
   workflow_call:
     inputs:
-      repo:
-        required: true
+      checkout_ref:
+        required: false
         type: string
+        description: "This should match the ref that you called the workflow with. It ensures that the scripts are run from the same commit as the workflow."
 
 jobs:
   identify-kevs:
@@ -16,17 +17,17 @@ jobs:
         with:
           repository: canonical/identity-credentials-workflows
           path: identity-credentials-workflows
-          ref: ${{ github.workflow_sha}}  # Make sure to use the same ref as the calling workflow, so that we're getting the code from the same commit as the yaml.
+          ref: ${{ inputs.checkout_ref }}
       # NOTE: stderr is redirected to /dev/null to avoid leaking information to
       # public workflow output but the scripts can still be used locally to debug
       - name: Identify CVEs in KEV Database
-        run: ./identity-credentials-workflows/kev-identification/identify-kevs.sh ${{ inputs.repo }} > cves.txt 2>/dev/null
+        run: ./identity-credentials-workflows/kev-identification/identify-kevs.sh ${{ github.repository }} > cves.txt 2>/dev/null
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create SARIF
         run: ./identity-credentials-workflows/kev-identification/create-sarif.sh <cves.txt >cves.sarif 2>/dev/null
       - name: Upload SARIF
-        run: ./identity-credentials-workflows/kev-identification/upload-sarif.sh cves.sarif ${{ inputs.repo }} 2>/dev/null
+        run: ./identity-credentials-workflows/kev-identification/upload-sarif.sh cves.sarif ${{ github.repository }} 2>/dev/null
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
