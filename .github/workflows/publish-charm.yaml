@@ -39,13 +39,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifact-name }}
+          path: ${{ inputs.path }}
 
       - name: Get Charm Under Test Path
         id: charm-path
-        run: echo "charm_path=$(find . -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
-
-      - name: Move built charm to charm directory
-        run: mv ${{ steps.charm-path.outputs.charm_path }} ${{ inputs.path }}
+        run: echo "charm_path=$(find ${{ inputs.path }} -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
 
       - name: Install charmcraft
         run: sudo snap install charmcraft --classic
