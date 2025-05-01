@@ -43,7 +43,7 @@ jobs:
 
       - name: Get Charm Under Test Path
         id: charm-path
-        run: echo "charm_path=$(find ${{ inputs.path }} -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
+        run: echo "charm_path=$(cd ${{ inputs.path }} && find . -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
 
       - name: Install charmcraft
         run: sudo snap install charmcraft --classic
