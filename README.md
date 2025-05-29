@@ -8,6 +8,7 @@ projects, create a `renovate.json5` file with the following content:
 
 ```json
 {
-    "extends": ["github>canonical/identity-credentials-workflows/renovate.json5#v0"]
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": ["https://raw.githubusercontent.com/canonical/identity-credentials-workflows/refs/heads/v0/renovate.json5"]
 }
 ```
