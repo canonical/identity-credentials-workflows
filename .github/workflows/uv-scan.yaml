@@ -1,0 +1,52 @@
+name: Trivy Vulnerability Scanner
+
+
+on:
+ schedule:
+   # Run daily at 00:00 UTC
+   - cron: "0 0 * * *"
+
+
+permissions:
+ security-events: write
+ actions: read
+ contents: read
+
+
+jobs:
+ scan:
+   name: Scan
+   runs-on: ubuntu-latest
+   steps:
+     - name: Checkout code
+       uses: actions/checkout@v4
+
+
+     - name: Install Trivy
+       run: |
+         curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.61.0
+
+
+     - name: Run Trivy vulnerability scanner (table format)
+       run: |
+         trivy fs uv.lock -d \
+           --scanners vuln \
+           --dependency-tree \
+           --severity CRITICAL,HIGH,MEDIUM \
+           --format table
+
+
+     - name: Run Trivy vulnerability scanner (SARIF format)
+       run: |
+         trivy fs uv.lock \
+           --scanners vuln \
+           --severity CRITICAL,HIGH,MEDIUM \
+           --format sarif \
+           --output trivy-results.sarif
+
+
+     - name: Upload Trivy scan results to GitHub Security tab
+       uses: github/codeql-action/upload-sarif@v3
+       with:
+         sarif_file: "trivy-results.sarif"
+         category: "Trivy Vulnerability Scan"
