@@ -13,7 +13,7 @@ on:
         default: '.'
         type: string
       fetch_libs:
-        description: 'Whether to fetch the latest charm libs'
+        description: 'Whether to fetch the charm libs defined in charmcraft.yaml'
         required: false
         type: boolean
         default: false
@@ -41,7 +41,7 @@ jobs:
           pipx install tox
           pipx inject tox tox-uv
 
-      - name: Fetch latest charm libraries
+      - name: Fetch charm libraries
         if: ${{ inputs.fetch_libs == true }}
         run: |
           charmcraft fetch-libs
