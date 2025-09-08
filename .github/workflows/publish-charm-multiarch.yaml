@@ -23,13 +23,13 @@ jobs:
     runs-on: ${{ matrix.arch.runner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Install charmcraft
         run: sudo snap install charmcraft --classic
 
       - name: Fetch Tested Charm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: built-charm-${{ matrix.arch.arch }}
 
@@ -38,7 +38,7 @@ jobs:
         run: echo "charm_path=$(find . -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
 
       - name: Upload charm to Charmhub
-        uses: canonical/charming-actions/upload-charm@2.6.3
+        uses: canonical/charming-actions/upload-charm@2.7.0
         with:
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"

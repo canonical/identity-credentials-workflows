@@ -33,10 +33,10 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Fetch Tested Charm
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           name: ${{ inputs.artifact-name }}
           path: ${{ inputs.path }}
@@ -57,7 +57,7 @@ jobs:
         if: ${{ inputs.branch-name != '' }}
 
       - name: Upload charm to Charmhub
-        uses: canonical/charming-actions/upload-charm@2.6.3
+        uses: canonical/charming-actions/upload-charm@2.7.0
         with:
           charm-path: ${{ inputs.path }}
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
@@ -67,12 +67,12 @@ jobs:
         if: ${{ inputs.track-name != '' }}
 
       - name: Select Charmhub channel
-        uses: canonical/charming-actions/channel@2.6.3
+        uses: canonical/charming-actions/channel@2.7.0
         id: channel
         if: ${{ inputs.track-name == '' }}
 
       - name: Upload charm to Charmhub
-        uses: canonical/charming-actions/upload-charm@2.6.3
+        uses: canonical/charming-actions/upload-charm@2.7.0
         with:
           charm-path: ${{ inputs.path }}
           built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
@@ -82,7 +82,7 @@ jobs:
         if: ${{ inputs.track-name == '' }}
 
       - name: Publish libs
-        uses: canonical/charming-actions/release-libraries@2.6.3
+        uses: canonical/charming-actions/release-libraries@2.7.0
         with:
           charm-path: ${{ inputs.path }}
           credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
