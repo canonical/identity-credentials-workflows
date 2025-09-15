@@ -30,7 +30,7 @@ jobs:
         uses: aquasecurity/trivy-action@0.33.1
         with:
           scan-type: 'fs'
-          scan-ref: 'uv.lock'
+          scan-ref: ${{ inputs.uv-lock-path}}
           version: 'v0.61.0'
           format: 'table'
           severity: 'CRITICAL,HIGH,MEDIUM'
