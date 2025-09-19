@@ -11,12 +11,6 @@ on:
         default: 'uv.lock'
 
 
-permissions:
-  security-events: write
-  actions: read
-  contents: read
-
-
 jobs:
   scan:
     name: Scan
