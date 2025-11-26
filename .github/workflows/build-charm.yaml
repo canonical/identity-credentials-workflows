@@ -2,9 +2,18 @@ name: Build
 
 on:
   workflow_call:
+    inputs:
+      bases:
+        description: JSON array of bases to build for (e.g. ["ubuntu@24.04"])
+        required: false
+        type: string
+        default: '["ubuntu@24.04"]'
 
 jobs:
   build-charm-under-test:
+    strategy:
+      matrix:
+        base: ${{ fromJSON(inputs.bases) }}
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
@@ -12,17 +21,19 @@ jobs:
       - name: Setup LXD
         uses: canonical/setup-lxd@main
         with:
-            channel: 5.21/stable
+          channel: 5.21/stable
 
       - name: Install charmcraft
         run: sudo snap install charmcraft --classic
 
       - name: Build charm under test
-        run: charmcraft pack --verbose
+        run: |
+          charmcraft pack --verbose
 
       - name: Archive Charm Under Test
         uses: actions/upload-artifact@v4
         with:
-          name: built-charm-amd64
+          name: built-charm-${{ matrix.base }}-amd64
           path: "*.charm"
+          if-no-files-found: error
           retention-days: 5

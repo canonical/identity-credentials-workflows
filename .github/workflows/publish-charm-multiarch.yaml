@@ -3,6 +3,10 @@ name: Publish charm
 on:
   workflow_call:
     inputs:
+      base:
+        description: Base to publish (e.g. ubuntu@24.04)
+        type: string
+        required: true
       track-name:
         description: Name of the charmhub track to publish the charm to
         type: string
@@ -31,11 +35,16 @@ jobs:
       - name: Fetch Tested Charm
         uses: actions/download-artifact@v5
         with:
-          name: built-charm-${{ matrix.arch.arch }}
+          name: built-charm-${{ inputs.base }}-${{ matrix.arch.arch }}
+          path: .
 
       - name: Get Charm Under Test Path
         id: charm-path
-        run: echo "charm_path=$(find . -name '*.charm' -type f -print)" >> $GITHUB_OUTPUT
+        shell: bash
+        run: |
+          dir="."
+          file=$(echo "$dir"/*.charm)
+          echo "charm_path=${file}" >> "$GITHUB_OUTPUT"
 
       - name: Upload charm to Charmhub
         uses: canonical/charming-actions/upload-charm@2.7.0
