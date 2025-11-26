@@ -3,56 +3,52 @@ name: Publish charm
 on:
   workflow_call:
     inputs:
-      base:
-        description: Base to publish (e.g. ubuntu@24.04)
-        type: string
+      destination_channel:
+        description: CharmHub channel to publish to
         required: true
-      track-name:
-        description: Name of the charmhub track to publish the charm to
         type: string
+      artifacts-key:
+        description: Key used to download the charm artifacts
         required: true
+        type: string
+      charm-paths:
+        description: Comma-separated list of exact charm file paths
+        required: true
+        type: string
+    outputs:
+      channel:
+        description: "The release channel"
+        value: ${{ jobs.publish-charm.outputs.channel }}
     secrets:
       CHARMCRAFT_AUTH:
         required: true
 
 jobs:
   publish-charm:
-    strategy:
-      matrix:
-        arch:
-          - arch: amd64
-            runner: ubuntu-24.04
-          - arch: arm64
-            runner: [self-hosted, linux, ARM64, medium, jammy]
-    runs-on: ${{ matrix.arch.runner }}
+    name: Publish Charm
+    runs-on: ubuntu-24.04
+    outputs:
+      channel: ${{ inputs.destination_channel }}
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-
-      - name: Install charmcraft
-        run: sudo snap install charmcraft --classic
-
-      - name: Fetch Tested Charm
-        uses: actions/download-artifact@v5
         with:
-          name: built-charm-${{ inputs.base }}-${{ matrix.arch.arch }}
-          path: .
+          fetch-depth: 0
 
-      - name: Get Charm Under Test Path
-        id: charm-path
-        shell: bash
-        run: |
-          dir="."
-          file=$(echo "$dir"/*.charm)
-          echo "charm_path=${file}" >> "$GITHUB_OUTPUT"
+      - name: Download charm artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.artifacts-key }}
 
       - name: Upload charm to Charmhub
         uses: canonical/charming-actions/upload-charm@2.7.0
         with:
-          built-charm-path: ${{ steps.charm-path.outputs.charm_path }}
-          credentials: "${{ secrets.CHARMCRAFT_AUTH }}"
-          github-token: "${{ secrets.GITHUB_TOKEN }}"
-          channel: ${{ inputs.track-name }}/edge
+          credentials: ${{ secrets.CHARMCRAFT_AUTH }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          channel: ${{ inputs.destination_channel }}
+          destructive-mode: false
+          built-charm-path: ${{ inputs.charm-paths }}
+          github-tag: false
 
       - name: Archive charmcraft logs
         if: failure()

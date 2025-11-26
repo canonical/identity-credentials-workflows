@@ -3,28 +3,43 @@ name: Build
 on:
   workflow_call:
     inputs:
-      bases:
-        required: false
-        default: '["ubuntu@24.04"]'
-        type: string
       use-charmcraft-cache:
+        description: Enable usage of charmcraftcache
         required: false
         default: false
         type: boolean
+      charmcraft-channel:
+        description: Snap channel for charmcraft
+        required: false
+        default: latest/stable
+        type: string
+    outputs:
+      name:
+        description: The charm name
+        value: ${{ jobs.build-charm-under-test.outputs.name }}
+      platforms:
+        description: The platforms for which the charm has been built
+        value: ${{ jobs.build-charm-under-test.outputs.platforms }}
+      charm-paths:
+        description: The paths to all the charms built
+        value: ${{ jobs.build-charm-under-test.outputs.paths }}
+      artifacts-key:
+        description: Key used to upload all the charm artifacts
+        value: ${{ jobs.build-charm-under-test.outputs.artifacts }}
 
 jobs:
   build-charm-under-test:
-    strategy:
-      matrix:
-        base: ${{ fromJSON(inputs.bases) }}
-        arch:
-          - arch: amd64
-            runner: ubuntu-24.04
-          - arch: arm64
-            runner: [self-hosted, linux, ARM64, medium, jammy]
-    runs-on: ${{ matrix.arch.runner }}
+    runs-on: ubuntu-24.04
+    outputs:
+      name: ${{ steps.get-charm-info.outputs.charm-name }}
+      platforms: ${{ steps.get-charm-info.outputs.charm-platforms }}
+      paths: ${{ steps.get-charm-paths.outputs.charm-paths }}
+      artifacts: ${{ steps.artifact-name.outputs.artifact }}
     steps:
-      - uses: actions/checkout@v5
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup LXD
         uses: canonical/setup-lxd@main
@@ -33,30 +48,37 @@ jobs:
 
       - name: Install charmcraft
         run: |
-          sudo snap install charmcraft --classic
+          sudo snap install charmcraft --classic --channel ${{ inputs.charmcraft-channel }}
           echo CHARMCRAFT_BIN=charmcraft >> $GITHUB_ENV
-      - name: Install charmcraft cache
+
+      - name: Install charmcraftcache
         if: ${{ inputs.use-charmcraft-cache }}
         run: |
-          # Ensure pipx is available
-          if ! command -v pipx &> /dev/null; then
-            # Install pipx via system package manager
-            sudo apt update && sudo apt install -y pipx
-            # Ensure pipx is in PATH
-            export PATH="$HOME/.local/bin:$PATH"
-            echo "$HOME/.local/bin" >> $GITHUB_PATH
-          fi
           pipx install charmcraftcache
           echo CHARMCRAFT_BIN=ccc >> $GITHUB_ENV
 
       - name: Build charm under test
-        run: |
-          ${{ env.CHARMCRAFT_BIN }} pack --verbose
+        run: ${{ env.CHARMCRAFT_BIN }} pack -v
 
-      - name: Archive Charm Under Test
+      - name: Get charm info
+        id: get-charm-info
+        run: |
+          echo charm-name=$(cat charmcraft.yaml | yq '.name') >> $GITHUB_OUTPUT
+          echo charm-platforms=$(cat charmcraft.yaml | yq '.bases // .platforms | keys | tojson') >> $GITHUB_OUTPUT
+
+      - name: Get charm paths
+        id: get-charm-paths
+        run: |
+          echo charm-paths=$(echo '${{ steps.get-charm-info.outputs.charm-platforms }}' | jq -r --arg charm ${{ steps.get-charm-info.outputs.charm-name }} '.[] |= split(":") | .[] |= join("-") | map($charm + "_" + . + ".charm") | join(",")') >> $GITHUB_OUTPUT
+
+      - name: Generate artifact name
+        id: artifact-name
+        run: echo artifact='${{ github.sha }}-${{ github.job }}' >> $GITHUB_OUTPUT
+
+      - name: Upload charm artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: built-charm-${{ matrix.base }}-${{ matrix.arch.arch }}
-          path: "*.charm"
+          name: ${{ steps.artifact-name.outputs.artifact }}
+          path: ${{ github.workspace }}/*.charm
           if-no-files-found: error
           retention-days: 5
