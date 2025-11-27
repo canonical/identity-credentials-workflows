@@ -16,11 +16,11 @@ on:
         default: ""
         type: string
       artifacts-key:
-        description: Key used to download the charm artifacts
+        description: Artifact key from build workflow output (format <sha>-<job>), comes from build-charm workflow
         required: true
         type: string
       charm-paths:
-        description: Comma-separated list of exact charm file paths
+        description: Charm paths output from build workflow (<name>_<series-arch>.charm entries), comes from build-charm workflow
         required: true
         type: string
     outputs:

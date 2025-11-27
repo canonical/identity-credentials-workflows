@@ -10,16 +10,16 @@ on:
         type: string
     outputs:
       name:
-        description: The charm name
+        description: Charm name from charmcraft.yaml
         value: ${{ jobs.build-charm-under-test.outputs.name }}
       platforms:
-        description: The platforms for which the charm has been built
+        description: JSON array of platforms like ["ubuntu@24.04:amd64"]
         value: ${{ jobs.build-charm-under-test.outputs.platforms }}
       charm-paths:
-        description: The paths to all the charms built
+        description: Comma-separated <name>_<series-arch>.charm
         value: ${{ jobs.build-charm-under-test.outputs.paths }}
       artifacts-key:
-        description: Key used to upload all the charm artifacts
+        description: Artifact identifier <sha>-<job>
         value: ${{ jobs.build-charm-under-test.outputs.artifacts }}
 
 jobs:
@@ -56,11 +56,11 @@ jobs:
       - name: Get charm paths
         id: get-charm-paths
         run: |
-          echo charm-paths=$(echo '${{ steps.get-charm-info.outputs.charm-platforms }}' | jq -r --arg charm ${{ steps.get-charm-info.outputs.charm-name }} '.[] |= split(":") | .[] |= join("-") | map($charm + "_" + . + ".charm") | join(",")') >> $GITHUB_OUTPUT
+          echo charm-paths=$(echo '${{ steps.get-charm-info.outputs.charm-platforms }}' | jq -r --arg charm '${{ steps.get-charm-info.outputs.charm-name }}' 'map(select(endswith(":amd64"))) | map(split(":") | join("-")) | map($charm + "_" + . + ".charm") | join(",")') >> $GITHUB_OUTPUT
 
       - name: Generate artifact name
         id: artifact-name
-        run: echo artifact='${{ github.sha }}-${{ github.job }}' >> $GITHUB_OUTPUT
+        run: echo artifact='${{ github.sha }}-${{ github.job }}-amd64' >> $GITHUB_OUTPUT
 
       - name: Upload charm artifacts
         uses: actions/upload-artifact@v4
