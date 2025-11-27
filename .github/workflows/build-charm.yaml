@@ -50,8 +50,8 @@ jobs:
       - name: Get charm info
         id: get-charm-info
         run: |
-          echo charm-name=$(yq '.name' charmcraft.yaml) >> $GITHUB_OUTPUT
-          echo charm-platforms=$(yq '.bases // .platforms | keys | tojson' charmcraft.yaml) >> $GITHUB_OUTPUT
+          echo charm-name=$(yq -r '.name' charmcraft.yaml) >> $GITHUB_OUTPUT
+          echo charm-platforms=$(yq -r '.bases // .platforms | keys | tojson' charmcraft.yaml) >> $GITHUB_OUTPUT
 
       - name: Get charm paths
         id: get-charm-paths
