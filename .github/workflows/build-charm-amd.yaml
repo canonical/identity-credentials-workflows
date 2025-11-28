@@ -51,12 +51,12 @@ jobs:
         id: get-charm-info
         run: |
           echo charm-name=$(yq -r '.name' charmcraft.yaml) >> $GITHUB_OUTPUT
-          echo charm-platforms=$(yq -r '.bases // .platforms | keys | tojson' charmcraft.yaml) >> $GITHUB_OUTPUT
+          echo charm-platforms=$(yq -r '.bases // .platforms | keys | map(select(endswith(":amd64"))) | tojson' charmcraft.yaml) >> $GITHUB_OUTPUT
 
       - name: Get charm paths
         id: get-charm-paths
         run: |
-          echo charm-paths=$(echo '${{ steps.get-charm-info.outputs.charm-platforms }}' | jq -r --arg charm '${{ steps.get-charm-info.outputs.charm-name }}' 'map(select(endswith(":amd64"))) | map(split(":") | join("-")) | map($charm + "_" + . + ".charm") | join(",")') >> $GITHUB_OUTPUT
+          echo charm-paths=$(echo '${{ steps.get-charm-info.outputs.charm-platforms }}' | jq -r --arg charm '${{ steps.get-charm-info.outputs.charm-name }}' 'map(split(":") | join("-")) | map($charm + "_" + . + ".charm") | join(",")') >> $GITHUB_OUTPUT
 
       - name: Generate artifact name
         id: artifact-name
