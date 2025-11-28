@@ -49,6 +49,9 @@ jobs:
             - name: Install charmcraft
               run: sudo snap install charmcraft --classic --channel ${{ inputs.charmcraft-channel }}
 
+            - name: Install yq
+              run: sudo snap install yq
+
             - name: Build charm under test
               run: charmcraft pack -v
 
@@ -56,7 +59,8 @@ jobs:
               id: get-charm-info
               run: |
                   echo charm-name=$(yq -r '.name' charmcraft.yaml) >> $GITHUB_OUTPUT
-                  echo charm-platforms=$(yq -r '.bases // .platforms | keys | map(select(endswith(":arm64"))) | tojson' charmcraft.yaml) >> $GITHUB_OUTPUT
+                  platforms=$(yq -o=json '.bases // .platforms | keys' charmcraft.yaml | jq -c 'map(select(endswith(":arm64")))')
+                  echo charm-platforms=$platforms >> $GITHUB_OUTPUT
 
             - name: Get charm paths
               id: get-charm-paths
