@@ -29,7 +29,7 @@ on:
 
 jobs:
     build-charm-under-test:
-        runs-on: ubuntu-24.04-arm64
+        runs-on: [self-hosted, linux, ARM64, medium, noble]
         outputs:
             name: ${{ steps.get-charm-info.outputs.charm-name }}
             platforms: ${{ steps.get-charm-info.outputs.charm-platforms }}
