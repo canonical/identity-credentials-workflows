@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/canonical/identity-credentials-workflows/compare/v0.1.0...v0.2.0) (2025-12-04)
+
+
+### Features
+
+* Explicitly set name, path and artifact when building the charm ([#47](https://github.com/canonical/identity-credentials-workflows/issues/47)) ([5a654f4](https://github.com/canonical/identity-credentials-workflows/commit/5a654f4408424159696cbbe438524ed92dfc0803))
+
 ## [0.1.0](https://github.com/canonical/identity-credentials-workflows/compare/v0.0.3...v0.1.0) (2025-09-30)
 
 
