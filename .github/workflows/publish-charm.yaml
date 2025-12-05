@@ -67,7 +67,7 @@ jobs:
           channel: ${{ steps.publish-channel.outputs.channel }}
           destructive-mode: false
           built-charm-path: ${{ inputs.charm-paths }}
-          github-tag: false
+          github-tag: true
 
       - name: Archive charmcraft logs
         if: failure()
