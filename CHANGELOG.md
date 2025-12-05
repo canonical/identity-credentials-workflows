@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/canonical/identity-credentials-workflows/compare/v1.1.0...v1.2.0) (2025-12-05)
+
+
+### Features
+
+* enable GitHub tag creation in publish-charm workflow ([feefa49](https://github.com/canonical/identity-credentials-workflows/commit/feefa492b6c54499ee8706b639c68e3fbdadeea0))
+
 ## [1.1.0](https://github.com/canonical/identity-credentials-workflows/compare/v1.0.0...v1.1.0) (2025-12-04)
 
 
