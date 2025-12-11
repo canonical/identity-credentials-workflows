@@ -23,6 +23,11 @@ on:
         description: Charm paths output from build workflow (<name>_<series-arch>.charm entries), comes from build-charm workflow
         required: true
         type: string
+      tag-prefix:
+        description: Tag prefix for GitHub releases (useful for monorepos with multiple charms)
+        required: false
+        type: string
+        default: ""
     outputs:
       channel:
         description: "The release channel"
@@ -68,6 +73,7 @@ jobs:
           destructive-mode: false
           built-charm-path: ${{ inputs.charm-paths }}
           github-tag: true
+          tag-prefix: ${{ inputs.tag-prefix }}
 
       - name: Archive charmcraft logs
         if: failure()
