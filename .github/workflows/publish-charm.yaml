@@ -28,6 +28,11 @@ on:
         required: false
         type: string
         default: ""
+      path:
+        description: Path to the charm directory (for monorepos)
+        required: false
+        default: .
+        type: string
     outputs:
       channel:
         description: "The release channel"
@@ -71,6 +76,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           channel: ${{ steps.publish-channel.outputs.channel }}
           destructive-mode: false
+          charm-path: ${{ inputs.path }}
           built-charm-path: ${{ inputs.charm-paths }}
           github-tag: true
           tag-prefix: ${{ inputs.tag-prefix }}
