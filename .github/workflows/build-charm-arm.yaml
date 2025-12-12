@@ -13,6 +13,11 @@ on:
                 required: false
                 default: true
                 type: boolean
+            path:
+                description: Path to the charm directory (for monorepos)
+                required: false
+                default: .
+                type: string
         outputs:
             name:
                 description: Charm name from charmcraft.yaml
@@ -54,6 +59,7 @@ jobs:
 
             - name: Build charm under test
               run: charmcraft pack -v
+              working-directory: ${{ inputs.path }}
 
             - name: Get charm info
               id: get-charm-info
@@ -61,6 +67,7 @@ jobs:
                   echo charm-name=$(yq -r '.name' charmcraft.yaml) >> $GITHUB_OUTPUT
                   platforms=$(yq -o=json '.bases // .platforms | keys' charmcraft.yaml | jq -c 'map(select(endswith(":arm64")))')
                   echo charm-platforms=$platforms >> $GITHUB_OUTPUT
+              working-directory: ${{ inputs.path }}
 
             - name: Get charm paths
               id: get-charm-paths
@@ -75,6 +82,6 @@ jobs:
               uses: actions/upload-artifact@v4
               with:
                   name: ${{ steps.artifact-name.outputs.artifact }}
-                  path: ${{ github.workspace }}/*.charm
+                  path: ${{ github.workspace }}/${{ inputs.path }}/*.charm
                   if-no-files-found: error
                   retention-days: 5
