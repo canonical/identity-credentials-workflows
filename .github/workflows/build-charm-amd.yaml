@@ -13,6 +13,11 @@ on:
         required: false
         default: .
         type: string
+      artifact-suffix:
+        description: Suffix to append to artifact name (for monorepos with multiple charms)
+        required: false
+        default: ""
+        type: string
     outputs:
       name:
         description: Charm name from charmcraft.yaml
@@ -71,7 +76,13 @@ jobs:
 
       - name: Generate artifact name
         id: artifact-name
-        run: echo artifact='${{ github.sha }}-${{ github.job }}-amd64' >> $GITHUB_OUTPUT
+        run: |
+          suffix="${{ inputs.artifact-suffix }}"
+          if [ -n "$suffix" ]; then
+            echo artifact='${{ github.sha }}-${{ github.job }}-amd64-'"$suffix" >> $GITHUB_OUTPUT
+          else
+            echo artifact='${{ github.sha }}-${{ github.job }}-amd64' >> $GITHUB_OUTPUT
+          fi
 
       - name: Upload charm artifacts
         uses: actions/upload-artifact@v4
