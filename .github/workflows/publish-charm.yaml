@@ -68,6 +68,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.artifacts-key }}
+          path: ${{ inputs.path }}
 
       - name: Upload charm to Charmhub
         uses: canonical/charming-actions/upload-charm@2.7.0
