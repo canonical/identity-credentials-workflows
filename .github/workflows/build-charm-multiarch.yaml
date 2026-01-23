@@ -19,7 +19,7 @@ jobs:
             runner: [self-hosted, linux, ARM64, medium, jammy]
     runs-on: ${{ matrix.arch.runner }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
 
       - name: Setup LXD
         uses: canonical/setup-lxd@main
@@ -48,7 +48,7 @@ jobs:
         run: ${{ env.CHARMCRAFT_BIN }} pack --verbose
 
       - name: Archive Charm Under Test
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: built-charm-${{ matrix.arch.arch }}
           path: "*.charm"
