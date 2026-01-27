@@ -8,7 +8,7 @@
   schedule: ["at any time"],
   lockFileMaintenance: {
     enabled: true,
-    schedule: ["at any time"],
+    schedule: ["before 4am on monday"],
   },
   timezone: "Etc/UTC",
   enabledManagers: ["pep621", "github-actions", "terraform"],
@@ -27,6 +27,12 @@
     {
       // Bumping "pytest-asyncio" over 0.23 breaks the integration tests
       matchPackageNames: ["pytest-asyncio"],
+      matchUpdateTypes: ["minor"],
+      enabled: false,
+    },
+    {
+      // Bumping "rpds" over 0.27 breaks the unit tests with Pydantic V1
+      matchPackageNames: ["rpds-py"],
       matchUpdateTypes: ["minor"],
       enabled: false,
     },
