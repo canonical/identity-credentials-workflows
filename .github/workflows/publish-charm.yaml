@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Fetch Tested Charm
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: ${{ inputs.artifact-name }}
           path: ${{ inputs.path }}
@@ -88,7 +88,7 @@ jobs:
 
       - name: Archive charmcraft logs
         if: failure()
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: charmcraft-logs
           path: /home/runner/.local/state/charmcraft/log/*.log
