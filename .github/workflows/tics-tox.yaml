@@ -57,7 +57,7 @@ jobs:
           mv ${{ inputs.dir }}/coverage.xml ${{ inputs.dir }}/cover/coverage.xml
 
       - name: Run TICS analysis with github-action
-        uses: tiobe/tics-github-action@a53037a6bb9f71b6a97cdeb0ac41632266804b9e # v3
+        uses: tiobe/tics-github-action@768de18bedf164ee461bc9ef5e2f2fa1a20b122a # v3
         with:
           mode: qserver
           project: ${{ inputs.project}}
