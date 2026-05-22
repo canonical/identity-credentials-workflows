@@ -21,7 +21,7 @@ jobs:
 
 
       - name: Run Trivy vulnerability scanner (table format)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'
           scan-ref: ${{ inputs.uv-lock-path}}
@@ -31,7 +31,7 @@ jobs:
           scanners: 'vuln'
 
       - name: Run Trivy vulnerability scanner (SARIF format)
-        uses: aquasecurity/trivy-action@0.33.1
+        uses: aquasecurity/trivy-action@0.35.0
         with:
           scan-type: 'fs'
           scan-ref: ${{ inputs.uv-lock-path }}
