@@ -42,7 +42,7 @@ jobs:
       artifacts: ${{ steps.artifact-name.outputs.artifact }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -85,7 +85,7 @@ jobs:
           fi
 
       - name: Upload charm artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ steps.artifact-name.outputs.artifact }}
           path: ${{ github.workspace }}/${{ inputs.path }}/*.charm
