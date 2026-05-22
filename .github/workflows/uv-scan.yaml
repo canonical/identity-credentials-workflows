@@ -21,21 +21,21 @@ jobs:
 
 
       - name: Run Trivy vulnerability scanner (table format)
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: ${{ inputs.uv-lock-path}}
-          version: 'v0.61.0'
+          version: 'v0.70.0'
           format: 'table'
           severity: 'CRITICAL,HIGH,MEDIUM'
           scanners: 'vuln'
 
       - name: Run Trivy vulnerability scanner (SARIF format)
-        uses: aquasecurity/trivy-action@0.35.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: 'fs'
           scan-ref: ${{ inputs.uv-lock-path }}
-          version: 'v0.61.0'
+          version: 'v0.70.0'
           format: 'sarif'
           severity: 'CRITICAL,HIGH,MEDIUM'
           scanners: 'vuln'
