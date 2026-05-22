@@ -2,12 +2,18 @@ name: Lint report
 
 on:
   workflow_call:
+    inputs:
+      path:
+        description: Path to the charm's root directory
+        required: false
+        type: string
+        default: ./
 
 jobs:
   lint-report:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
 
       - name: Install uv
         run: sudo snap install --classic astral-uv
@@ -16,4 +22,6 @@ jobs:
         run: uv tool install tox --with tox-uv
 
       - name: Run tests using tox
-        run: tox -e lint
+        run: |
+          cd ${{ inputs.path }}
+          tox -e lint

@@ -1,0 +1,67 @@
+name: TICS
+
+on:
+  workflow_call:
+    inputs:
+      project:
+        description: 'The name of the TiCS project to submit the analysis to'
+        required: true
+        type: string
+      dir:
+        description: 'The directory where the code and tox.ini is located, if not the root of the repository'
+        required: false
+        default: '.'
+        type: string
+      fetch_libs:
+        description: 'Whether to fetch the charm libs defined in charmcraft.yaml'
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      TICSAUTHTOKEN:
+        required: true
+
+
+jobs:
+  analyze:
+    runs-on: [self-hosted, linux, amd64, tiobe, jammy]
+
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y python3.10-venv pipx
+
+      - name: Install charmcraft
+        run: |
+          sudo snap install charmcraft --classic
+
+      - name: Install tox using pipx
+        run: |
+          pipx install tox
+          pipx inject tox tox-uv
+
+      - name: Fetch charm libraries
+        if: ${{ inputs.fetch_libs == true }}
+        run: |
+          charmcraft fetch-libs
+
+      - name: Run tox tests to create coverage.xml
+        working-directory: ${{ inputs.dir }}
+        run: |
+          tox run -e unit
+
+      - name: move results to necessary folder for TICS
+        run: |
+          mkdir ${{ inputs.dir }}/cover
+          mv ${{ inputs.dir }}/coverage.xml ${{ inputs.dir }}/cover/coverage.xml
+
+      - name: Run TICS analysis with github-action
+        uses: tiobe/tics-github-action@009979693978bfefad2ad15c1020066694968dc7 # v3
+        with:
+          mode: qserver
+          project: ${{ inputs.project}}
+          branchdir: ${{ github.workspace }}/${{ inputs.dir }}
+          viewerUrl: https://canonical.tiobe.com/tiobeweb/TICS/api/cfg?name=default
+          ticsAuthToken: ${{ secrets.TICSAUTHTOKEN }}
+          installTics: true
