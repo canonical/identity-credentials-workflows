@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/canonical/identity-credentials-workflows/compare/v1.3.0...v1.3.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* downgrade go version used by grafana ([#76](https://github.com/canonical/identity-credentials-workflows/issues/76)) ([0b39af3](https://github.com/canonical/identity-credentials-workflows/commit/0b39af37748d8529449f99e7c71f679d54d6ad9f))
+
 ## [1.3.0](https://github.com/canonical/identity-credentials-workflows/compare/v1.2.1...v1.3.0) (2026-01-30)
 
 
