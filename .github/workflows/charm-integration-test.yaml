@@ -1,0 +1,130 @@
+name: Charm Integration Tests
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-key:
+        description: Artifact key prefix from charm-build workflow
+        required: true
+        type: string
+      charm-name:
+        description: Charm name (used for log collection)
+        required: true
+        type: string
+      path:
+        description: Path to the charm directory
+        required: false
+        default: .
+        type: string
+      tox-targets:
+        description: Comma-separated list of tox integration targets
+        required: false
+        default: integration
+        type: string
+      microk8s-channel:
+        description: MicroK8s snap channel
+        required: false
+        default: 1.32-strict/stable
+        type: string
+      juju-channel:
+        description: Juju snap channel
+        required: false
+        default: 3.6/stable
+        type: string
+      node-size:
+        description: Size of self-hosted runner (medium, large, xlarge)
+        required: false
+        default: large
+        type: string
+      container-name:
+        description: Container name for log collection on failure
+        required: false
+        default: ""
+        type: string
+      charm-config-path:
+        description: Config file path for debugging on failure
+        required: false
+        default: ""
+        type: string
+
+jobs:
+  validate-inputs:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Validate node size
+        if: ${{ !contains(fromJSON('["medium", "large", "xlarge"]'), inputs.node-size) }}
+        run: |
+          echo "Invalid node-size: ${{ inputs.node-size }}"
+          exit 1
+
+  integration-test:
+    name: Run Integration Tests (${{ inputs.tox-targets }})
+    runs-on: [self-hosted, amd64, "${{ inputs.node-size }}", jammy]
+    needs: validate-inputs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup operator environment (microk8s)
+        uses: charmed-kubernetes/actions-operator@main
+        with:
+          juju-channel: ${{ inputs.juju-channel }}
+          provider: microk8s
+          channel: ${{ inputs.microk8s-channel }}
+          microk8s-addons: "dns hostpath-storage metallb:10.64.140.43-10.64.140.49"
+
+      - name: Download charm artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: ${{ inputs.artifacts-key }}-*
+          merge-multiple: true
+
+      - name: Set CHARM_PATH environment variable
+        run: |
+          CHARM_PATH="${{ github.workspace }}/${{ inputs.path }}"
+          echo "CHARM_PATH=$CHARM_PATH" >> "$GITHUB_ENV"
+
+      - name: Install dependencies
+        run: |
+          sudo snap install astral-uv --classic
+          uv tool install tox --with tox-uv
+
+      - name: Run integration tests
+        working-directory: ${{ inputs.path }}
+        run: |
+          for target in $(echo "${{ inputs.tox-targets }}" | tr ',' ' '); do
+            tox -e "$target" -- --model testing
+          done
+
+      - name: Get contexts
+        if: failure()
+        run: kubectl config view
+
+      - name: Get juju status
+        if: failure()
+        run: juju status --relations
+
+      - name: Dump logs
+        if: failure()
+        uses: canonical/charming-actions/dump-logs@main
+
+      - name: Get juju logs for the charm
+        if: failure()
+        run: juju debug-log --replay --include "${{ inputs.charm-name }}/0"
+
+      - name: Get container logs
+        if: failure() && inputs.container-name != ''
+        run: |
+          kubectl logs "${{ inputs.charm-name }}-0" -c "${{ inputs.container-name }}" -n testing
+
+      - name: Get config file
+        if: failure() && inputs.charm-config-path != '' && inputs.container-name != ''
+        run: |
+          juju ssh "${{ inputs.charm-name }}/0" "PYTHONPATH=agents/unit-${{ inputs.charm-name }}-0/charm/venv/ python3 -c '
+          from ops import pebble
+          p = pebble.Client(\"/charm/containers/${{ inputs.container-name }}/pebble.socket\")
+          f = p.pull(\"${{ inputs.charm-config-path }}\")
+          print(f.read())
+          '"'

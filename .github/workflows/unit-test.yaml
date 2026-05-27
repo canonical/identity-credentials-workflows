@@ -7,21 +7,36 @@ on:
         description: Path to the charm's root directory
         required: false
         type: string
-        default: ./
+        default: .
+      fetch-libs:
+        description: Run charmcraft fetch-libs before unit tests
+        required: false
+        default: false
+        type: boolean
 
 jobs:
   unit-tests:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install charmcraft
+        if: ${{ inputs.fetch-libs }}
+        run: sudo snap install charmcraft --classic
+
+      - name: Fetch charmcraft libs
+        if: ${{ inputs.fetch-libs }}
+        run: charmcraft fetch-libs
+        working-directory: ${{ inputs.path }}
+        env:
+          GH_TOKEN: ${{ github.token }}
 
       - name: Install uv
         run: sudo snap install --classic astral-uv
-      
+
       - name: Install tox
         run: uv tool install tox --with tox-uv
 
       - name: Run tests using tox
-        run: |
-          cd ${{ inputs.path }}
-          tox -e unit
+        run: tox -e unit
+        working-directory: ${{ inputs.path }}

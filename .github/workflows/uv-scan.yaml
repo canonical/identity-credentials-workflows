@@ -1,48 +1,55 @@
 name: Trivy Vulnerability Scanner
 
-
 on:
   workflow_call:
     inputs:
+      path:
+        description: Path to the directory containing uv.lock
+        required: false
+        type: string
+        default: .
       uv-lock-path:
-        description: 'Path to uv.lock file'
+        description: Path to uv.lock file relative to the path input
         required: false
         type: string
         default: 'uv.lock'
-
+      severity:
+        description: Comma-separated severity levels to report
+        required: false
+        type: string
+        default: 'CRITICAL,HIGH,MEDIUM'
 
 jobs:
   scan:
     name: Scan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
-
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
 
       - name: Run Trivy vulnerability scanner (table format)
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f91f1525241e3c28c60f # v0.30.0
         with:
           scan-type: 'fs'
-          scan-ref: ${{ inputs.uv-lock-path}}
-          version: 'v0.70.0'
+          scan-ref: ${{ inputs.path }}/${{ inputs.uv-lock-path }}
+          version: 'v0.58.0'
           format: 'table'
-          severity: 'CRITICAL,HIGH,MEDIUM'
+          severity: ${{ inputs.severity }}
           scanners: 'vuln'
 
       - name: Run Trivy vulnerability scanner (SARIF format)
-        uses: aquasecurity/trivy-action@v0.36.0
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f91f1525241e3c28c60f # v0.30.0
         with:
           scan-type: 'fs'
-          scan-ref: ${{ inputs.uv-lock-path }}
-          version: 'v0.70.0'
+          scan-ref: ${{ inputs.path }}/${{ inputs.uv-lock-path }}
+          version: 'v0.58.0'
           format: 'sarif'
-          severity: 'CRITICAL,HIGH,MEDIUM'
+          severity: ${{ inputs.severity }}
           scanners: 'vuln'
           output: 'trivy-results.sarif'
 
       - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@60168efe1c415ce0f5521ea06d9926d061cc75be # v3
         with:
           sarif_file: "trivy-results.sarif"
           category: "Trivy Vulnerability Scan"
