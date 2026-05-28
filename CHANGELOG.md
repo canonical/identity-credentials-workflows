@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/canonical/identity-credentials-workflows/compare/v1.3.1...v2.0.0) (2026-05-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removes old fragmented workflows in favor of unified ones.
+
+### Code Refactoring
+
+* unify workflows with multi-arch and mono-repo support ([#79](https://github.com/canonical/identity-credentials-workflows/issues/79)) ([09abfc0](https://github.com/canonical/identity-credentials-workflows/commit/09abfc0e875513619e58dff5cdd7a06e2b869934))
+
 ## [1.3.1](https://github.com/canonical/identity-credentials-workflows/compare/v1.3.0...v1.3.1) (2026-05-26)
 
 
