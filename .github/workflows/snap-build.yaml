@@ -1,0 +1,88 @@
+name: Build Snap
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: Path to the snap directory (for monorepos)
+        required: false
+        default: .
+        type: string
+      arch:
+        description: Target architecture (amd64, arm64, s390x, etc.)
+        required: false
+        default: amd64
+        type: string
+      runner:
+        description: >
+          GitHub Actions runner label(s). Use a JSON array string for self-hosted
+          runners, e.g. '["self-hosted", "linux", "ARM64", "medium", "noble"]'
+        required: false
+        default: '"ubuntu-24.04"'
+        type: string
+      artifact-suffix:
+        description: Suffix to append to the artifact key
+        required: false
+        default: ""
+        type: string
+      snapcraft-channel:
+        description: Snap channel for snapcraft
+        required: false
+        default: latest/stable
+        type: string
+    outputs:
+      name:
+        description: Snap name from snapcraft.yaml
+        value: ${{ jobs.build.outputs.name }}
+      artifacts-key:
+        description: Artifact key for downloading built snaps
+        value: ${{ jobs.build.outputs.artifacts-key }}
+
+jobs:
+  build:
+    name: Build (${{ inputs.arch }})
+    runs-on: ${{ fromJson(inputs.runner) }}
+    outputs:
+      name: ${{ steps.info.outputs.name }}
+      artifacts-key: ${{ steps.info.outputs.artifacts-key }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Determine build info
+        id: info
+        working-directory: ${{ inputs.path }}
+        env:
+          ARTIFACT_SUFFIX: ${{ inputs.artifact-suffix }}
+        run: |
+          set -euo pipefail
+          echo "name=$(yq -r '.name // "unknown"' snapcraft.yaml)" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$ARTIFACT_SUFFIX" ]]; then
+            echo "artifacts-key=${{ github.sha }}-build-${ARTIFACT_SUFFIX}-${{ inputs.arch }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "artifacts-key=${{ github.sha }}-build-${{ inputs.arch }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Setup LXD
+        uses: canonical/setup-lxd@main
+        with:
+          channel: 5.21/stable
+
+      - name: Install snapcraft
+        run: sudo snap install snapcraft --classic --channel ${{ inputs.snapcraft-channel }}
+
+      - name: Build snap
+        run: snapcraft pack --verbose
+        working-directory: ${{ inputs.path }}
+
+      - name: Upload snap artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: ${{ steps.info.outputs.artifacts-key }}
+          path: ${{ github.workspace }}/${{ inputs.path }}/*.snap
+          if-no-files-found: error
+          retention-days: 5

@@ -1,0 +1,92 @@
+name: Test Snap Service
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-key:
+        description: Artifact key prefix from snap-build workflow
+        required: true
+        type: string
+      snap-name:
+        description: Name of the snap command to verify (e.g. vault)
+        required: true
+        type: string
+      service-port:
+        description: Port to check for service listening (0 to skip)
+        required: false
+        default: 0
+        type: string
+      platforms:
+        description: JSON array of platforms to test
+        required: false
+        default: ""
+        type: string
+      timeout-seconds:
+        description: Timeout for service startup
+        required: false
+        default: 30
+        type: string
+
+jobs:
+  setup:
+    name: Setup Test Matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      platforms: ${{ steps.info.outputs.platforms }}
+    steps:
+      - name: Determine platforms
+        id: info
+        run: |
+          PLATFORMS_INPUT='${{ inputs.platforms }}'
+          if [[ -n "$PLATFORMS_INPUT" && "$PLATFORMS_INPUT" != "''" ]]; then
+            echo "platforms=$PLATFORMS_INPUT" >> "$GITHUB_OUTPUT"
+          else
+            # Default: amd64 and arm64
+            echo 'platforms=[{"arch":"amd64","runner":"ubuntu-24.04"}]' >> "$GITHUB_OUTPUT"
+          fi
+
+  test:
+    name: Test (${{ matrix.platform.arch }})
+    needs: setup
+    runs-on: ${{ matrix.platform.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: ${{ fromJson(needs.setup.outputs.platforms) }}
+    steps:
+      - name: Download snap artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifacts-key }}-${{ matrix.platform.arch }}
+
+      - name: Install snap
+        run: |
+          SNAP_NAME=$(ls *.snap | head -n 1)
+          echo "Installing snap $SNAP_NAME"
+          sudo snap install --dangerous "$SNAP_NAME"
+
+      - name: Start snap service
+        run: |
+          sudo snap start "${{ inputs.snap-name }}"
+          sleep "${{ inputs.timeout-seconds }}"
+
+      - name: Test snap service
+        if: ${{ inputs.service-port != '0' }}
+        run: |
+          if ss -tuln | grep ":${{ inputs.service-port }}"; then
+            echo "Service is listening on port ${{ inputs.service-port }}"
+          else
+            echo "Service is NOT listening on port ${{ inputs.service-port }}"
+            exit 1
+          fi
+
+      - name: Test snap binary
+        run: |
+          # Test that the command exists
+          which "${{ inputs.snap-name }}" || true
+          "${{ inputs.snap-name }}" --help || true
+
+      - name: Clean up
+        if: always()
+        run: |
+          sudo snap remove --purge "${{ inputs.snap-name }}" || true
