@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.0...v2.0.1) (2026-05-28)
+
+
+### Bug Fixes
+
+* Scan charms from charmhub ([b9e7a31](https://github.com/canonical/identity-credentials-workflows/commit/b9e7a31b9281d537703258c7f9a3d9ae42a92a25))
+
 ## [2.0.0](https://github.com/canonical/identity-credentials-workflows/compare/v1.3.1...v2.0.0) (2026-05-28)
 
 
