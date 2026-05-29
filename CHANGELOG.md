@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.3](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.2...v2.0.3) (2026-05-29)
+
+
+### Bug Fixes
+
+* Build grafana linter from source ([#88](https://github.com/canonical/identity-credentials-workflows/issues/88)) ([84eab03](https://github.com/canonical/identity-credentials-workflows/commit/84eab03a843b81fe821d8fe4fe6c27d2ef715793))
+
 ## [2.0.2](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.1...v2.0.2) (2026-05-29)
 
 
