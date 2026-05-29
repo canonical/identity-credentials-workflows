@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.1...v2.0.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* Update SHA in grafana lint ([#86](https://github.com/canonical/identity-credentials-workflows/issues/86)) ([ddd1cc2](https://github.com/canonical/identity-credentials-workflows/commit/ddd1cc206a96a5e6027dda707b5083f2f93b95fe))
+
 ## [2.0.1](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.0...v2.0.1) (2026-05-28)
 
 
