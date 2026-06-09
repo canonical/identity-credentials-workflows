@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.4](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.3...v2.0.4) (2026-06-09)
+
+
+### Bug Fixes
+
+* correct Trvy/CodeQL SHA pins and drop reserved GITHUB_TOKEN input ([#90](https://github.com/canonical/identity-credentials-workflows/issues/90)) ([8312260](https://github.com/canonical/identity-credentials-workflows/commit/8312260a1a80c5eb2a61316b956d82abb14d1c10))
+
 ## [2.0.3](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.2...v2.0.3) (2026-05-29)
 
 
