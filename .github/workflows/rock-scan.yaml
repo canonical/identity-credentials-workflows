@@ -69,6 +69,8 @@ jobs:
             VERSION=$(yq -r '.version' rockcraft.yaml)
           fi
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          IMAGE_REF="ghcr.io/${{ github.repository }}/${IMAGE_NAME}:${VERSION}-${{ inputs.arch }}"
+          echo "image-ref=$IMAGE_REF" >> "$GITHUB_OUTPUT"
 
       - name: Install rockcraft for skopeo
         run: sudo snap install rockcraft --classic --edge
@@ -79,15 +81,11 @@ jobs:
           name: ${{ inputs.artifacts-key }}
           path: rocks
 
-      - name: Import and scan rock
-        env:
-          SCAN_SEVERITY: ${{ inputs.scan-severity }}
+      - name: Import rock
         run: |
           set -euo pipefail
 
-          IMAGE_NAME="${{ steps.info.outputs.image }}"
-          VERSION="${{ steps.info.outputs.version }}"
-          IMAGE_REF="ghcr.io/${{ github.repository }}/${IMAGE_NAME}:${VERSION}-${{ inputs.arch }}"
+          IMAGE_REF="${{ steps.info.outputs.image-ref }}"
 
           rock_file=$(ls rocks/*.rock | head -n 1)
           echo "Importing $rock_file as $IMAGE_REF"
@@ -95,16 +93,19 @@ jobs:
             oci-archive:"$rock_file" \
             docker-daemon:"$IMAGE_REF"
 
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
-            aquasec/trivy:latest image \
-            --severity "$SCAN_SEVERITY" \
-            --format sarif \
-            --output "trivy-results-${{ inputs.arch }}.sarif" \
-            "$IMAGE_REF" || true
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
+        with:
+          scan-type: 'image'
+          image-ref: ${{ steps.info.outputs.image-ref }}
+          format: 'sarif'
+          output: 'trivy-results-${{ inputs.arch }}.sarif'
+          severity: ${{ inputs.scan-severity }}
+          scanners: 'vuln'
 
       - name: Upload SARIF results
         if: always()
-        uses: github/codeql-action/upload-sarif@b0c4fd77f6c559021d78430ec4d0d169ae74a4eb # v3
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
         with:
           sarif_file: "trivy-results-${{ inputs.arch }}.sarif"
           category: "Trivy Rock Scan (${{ inputs.arch }})"
