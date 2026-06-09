@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.5](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.4...v2.0.5) (2026-06-09)
+
+
+### Bug Fixes
+
+* replace docker-run trivy with trivy-action and bump CodeQL to v4 ([#92](https://github.com/canonical/identity-credentials-workflows/issues/92)) ([fdbbedf](https://github.com/canonical/identity-credentials-workflows/commit/fdbbedfa2a94f0798ae90c695708152893823b79))
+
 ## [2.0.4](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.3...v2.0.4) (2026-06-09)
 
 
