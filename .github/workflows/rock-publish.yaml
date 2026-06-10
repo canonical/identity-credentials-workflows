@@ -48,7 +48,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
 
       - name: Install yq
         run: sudo snap install yq
@@ -80,7 +80,7 @@ jobs:
           echo "registry=$INPUT_REGISTRY" >> "$GITHUB_OUTPUT"
 
       - name: Log in to container registry
-        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
         with:
           registry: ${{ steps.info.outputs.registry }}
           username: ${{ github.actor }}
