@@ -7,9 +7,6 @@ set allow-duplicate-recipes
 set allow-duplicate-variables
 set positional-arguments
 
-# TODO: some justfile-prepare target that runs for everything that sets up log and artifact output directories
-# TODO: logging for all of the file
-
 # print list of available commands
 [default]
 help:
@@ -57,8 +54,8 @@ setup:
 setup-go:
     #!/usr/bin/env bash
     set -euo pipefail
-    # TODO: add config option
-    sudo snap install go --classic --channel=1.26/stable
+
+    sudo snap install go --classic --channel=$GO_VERSION/stable
     go version
 
 [private]
@@ -66,7 +63,7 @@ setup-typescript:
     #!/usr/bin/env bash
     set -euo pipefail
     sudo apt install unzip
-    # TODO: probably need to not use curl here
+
     curl -fsSL https://bun.com/install | bash
     bun --version
     bun install
@@ -76,35 +73,38 @@ setup-python:
     #!/usr/bin/env bash
     set -euo pipefail
     sudo snap install astral-uv --classic
-    # TODO: maybe should take this from pyproject.toml
-    uv --version
+
     uv python install
 
 [private]
 setup-charmcraft:
     #!/usr/bin/env bash
     set -euo pipefail
-    sudo snap install charmcraft --classic --channel=3.x/stable
+
+    sudo snap install charmcraft --classic --channel=$CHARMCRAFT_CHANNEL
     charmcraft version
 
 [private]
 setup-snapcraft:
     #!/usr/bin/env bash
     set -euo pipefail
-    sudo snap install snapcraft --classic --channel=8.x/stable
+
+    sudo snap install snapcraft --classic --channel=$SNAPCRAFT_CHANNEL
     snapcraft version
 
 [private]
 setup-rockcraft:
     #!/usr/bin/env bash
     set -euo pipefail
-    sudo snap install rockcraft --classic --channel=latest/stable
+
+    sudo snap install rockcraft --classic --channel=$ROCKCRAFT_CHANNEL
     rockcraft version
 
 [private]
 setup-juju-k8s:
     #!/usr/bin/env bash
     set -euo pipefail
+
     sudo snap install concierge --classic --channel=latest/stable
     sudo concierge prepare -p k8s
 
@@ -112,6 +112,7 @@ setup-juju-k8s:
 setup-juju-machine:
     #!/usr/bin/env bash
     set -euo pipefail
+
     sudo snap install concierge --classic --channel=latest/stable
     sudo concierge prepare -p machine
 
@@ -266,8 +267,8 @@ secscan-go: setup-go
     go install github.com/aquasecurity/trivy/cmd/trivy@v0.45.1
     trivy fs --scanners vuln,secret,misconfig .
 
-# TODO: this is not a test for the current repo's state.
-# It should be moved
+# TODO: this should be outside,
+# since it doesn't operate on the code or its artifacts
 [private]
 secscan-canonical:
     #!/usr/bin/env bash
@@ -281,7 +282,7 @@ secscan-canonical:
 
     set +e
     secscan-client --batch submit --scanner trivy --type package --format charm charm-under-test.charm --wait-and-print | tee charm-secscan.txt
-    @echo "secscan-return-code=$?" # TODO: should fail if the secscan failed.
+    @echo "secscan-return-code=$?"
     set -e
 
 # =============================================================================
@@ -327,7 +328,6 @@ build-charm:
     set -euo pipefail
 
     charmcraft fetch-libs
-    # TODO: use charmcraftcache
     charmcraft build --verbose
 
 [private]
