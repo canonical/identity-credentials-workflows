@@ -1,0 +1,8 @@
+import? "https://raw.githubusercontent.com/canonical/identity-credentials-workflows/refs/tags/v2.0.1/common.just"
+
+build:
+    #!/bin/bash
+    # move the frontend files to the expected location
+    # then run the build command
+
+# you can have any other custom build commands here

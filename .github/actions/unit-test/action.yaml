@@ -1,0 +1,30 @@
+name: unit-test
+description: Run shared unit tests through just.
+inputs:
+  working-directory:
+    description: the directory to run unit tests in
+    required: false
+    default: .
+
+  go-enabled:
+    description: enable unit tests for golang
+    required: false
+    default: "false"
+  python-enabled:
+    description: enable unit tests for python
+    required: false
+    default: "false"
+  typescript-enabled:
+    description: enable unit tests for typescript
+    required: false
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: Run unit tests
+      shell: bash
+      run: just working-directory=${{ inputs.working-directory }} test-unit
+      env:
+        GO_ENABLED: ${{ inputs.go_enabled }}
+        PYTHON_ENABLED: ${{ inputs.python_enabled }}
+        TYPESCRIPT_ENABLED: ${{ inputs.typescript_enabled }}

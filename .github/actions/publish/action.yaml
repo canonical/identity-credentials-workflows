@@ -1,0 +1,70 @@
+name: publish
+description: Release or publish an artifact.
+inputs:
+  path:
+    description: Project path to release.
+    required: false
+    default: .
+  channel:
+    description: Charmhub channel.
+    required: false
+    default: latest/edge
+  branch-name:
+    description: Branch suffix to append to the channel.
+    required: false
+    default: ""
+  charm-paths:
+    description: Comma-separated built charm paths.
+    required: false
+    default: ""
+  snap-file:
+    description: Snap artifact to publish.
+    required: false
+    default: ""
+  track:
+    description: Snap track.
+    required: false
+    default: latest
+  risk:
+    description: Snap risk.
+    required: false
+    default: edge
+  registry:
+    description: Container registry for rocks.
+    required: false
+    default: ghcr.io
+  image-name:
+    description: Rock image name override.
+    required: false
+    default: ""
+  version:
+    description: Rock version override.
+    required: false
+    default: ""
+  architectures:
+    description: JSON array of rock architectures.
+    required: false
+    default: '["amd64"]'
+  tag-latest:
+    description: Also publish latest for rocks.
+    required: false
+    default: "true"
+runs:
+  using: composite
+  steps:
+    - name: Release artifact
+      shell: bash
+      run: |
+        just release \
+          "${{ inputs.path }}" \
+          "${{ inputs.channel }}" \
+          "${{ inputs.branch-name }}" \
+          "${{ inputs.charm-paths }}" \
+          "${{ inputs.snap-file }}" \
+          "${{ inputs.track }}" \
+          "${{ inputs.risk }}" \
+          "${{ inputs.registry }}" \
+          "${{ inputs.image-name }}" \
+          "${{ inputs.version }}" \
+          '${{ inputs.architectures }}' \
+          "${{ inputs.tag-latest }}"

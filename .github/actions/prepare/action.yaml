@@ -1,0 +1,39 @@
+name: prepare-runner
+description: prepare the runner by fetching the repo and configuring the justfiles
+author: Kayra
+
+inputs:
+  toolchains:
+    description: |
+      "The toolchains to be used for the project. They must be specified as a comma-separated list.
+      The options are go, typescript, python, rockcraft, snapcraft, charmcraft, juju-k8s and juju-machine."
+    required: true
+    default: "go,python,typescript,rockcraft,snapcraft,charmcraft"
+runs:
+  using: composite
+  steps:
+    - name: install just
+      uses: just-setup/just-setup@v4
+      with:
+        just-version: 1.51.0
+
+    - name: check out current repository
+      uses: actions/checkout@v6
+    - name: check out justfiles from identity-credentials-workflows
+      uses: actions/checkout@v6
+      with:
+        repository: "canonical/identity-credentials-workflows"
+        sparse-checkout-cone-mode: false
+        sparse-checkout: |
+          common.just
+          scripts/
+    - name: merge justfiles
+      shell: bash
+      run: |
+        touch justfile
+        cat common.just justfile > justfile.tmp && mv justfile.tmp justfile
+
+    - name: verify justfiles
+      shell: bash
+      run: |
+        just

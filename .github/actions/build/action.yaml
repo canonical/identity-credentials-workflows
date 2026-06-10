@@ -1,0 +1,46 @@
+name: code-health
+description: Run shared code quality checks through just.
+inputs:
+  working-directory:
+    description: the directory to run builds in
+    required: false
+    default: .
+
+  build-python:
+    description: whether to build a python package
+    required: false
+    default: "false"
+  build-go:
+    description: whether to build a go package
+    required: false
+    default: "false"
+  build-typescript:
+    description: whether to build a typescript package
+    required: false
+    default: "false"
+  build-charm:
+    description: whether to build the charm
+    required: false
+    default: "false"
+  build-snap:
+    description: the type of charm to build
+    required: false
+    default: "false"
+  build-rock:
+    description: whether to build a rock package
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Run builds
+      shell: bash
+      run: just working-directory=${{ inputs.working-directory }} build
+      env:
+        BUILD_GO: ${{ inputs.BUILD_GO }}
+        BUILD_PYTHON: ${{ inputs.BUILD_PYTHON }}
+        BUILD_TYPESCRIPT: ${{ inputs.BUILD_TYPESCRIPT }}
+        BUILD_CHARM: ${{ inputs.BUILD_CHARM }}
+        BUILD_SNAP: ${{ inputs.BUILD_SNAP }}
+        BUILD_ROCK: ${{ inputs.BUILD_ROCK }}

@@ -1,5 +1,44 @@
 # Changelog
 
+## [2.0.3](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.2...v2.0.3) (2026-05-29)
+
+
+### Bug Fixes
+
+* Build grafana linter from source ([#88](https://github.com/canonical/identity-credentials-workflows/issues/88)) ([84eab03](https://github.com/canonical/identity-credentials-workflows/commit/84eab03a843b81fe821d8fe4fe6c27d2ef715793))
+
+## [2.0.2](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.1...v2.0.2) (2026-05-29)
+
+
+### Bug Fixes
+
+* Update SHA in grafana lint ([#86](https://github.com/canonical/identity-credentials-workflows/issues/86)) ([ddd1cc2](https://github.com/canonical/identity-credentials-workflows/commit/ddd1cc206a96a5e6027dda707b5083f2f93b95fe))
+
+## [2.0.1](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.0...v2.0.1) (2026-05-28)
+
+
+### Bug Fixes
+
+* Scan charms from charmhub ([b9e7a31](https://github.com/canonical/identity-credentials-workflows/commit/b9e7a31b9281d537703258c7f9a3d9ae42a92a25))
+
+## [2.0.0](https://github.com/canonical/identity-credentials-workflows/compare/v1.3.1...v2.0.0) (2026-05-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* Removes old fragmented workflows in favor of unified ones.
+
+### Code Refactoring
+
+* unify workflows with multi-arch and mono-repo support ([#79](https://github.com/canonical/identity-credentials-workflows/issues/79)) ([09abfc0](https://github.com/canonical/identity-credentials-workflows/commit/09abfc0e875513619e58dff5cdd7a06e2b869934))
+
+## [1.3.1](https://github.com/canonical/identity-credentials-workflows/compare/v1.3.0...v1.3.1) (2026-05-26)
+
+
+### Bug Fixes
+
+* downgrade go version used by grafana ([#76](https://github.com/canonical/identity-credentials-workflows/issues/76)) ([0b39af3](https://github.com/canonical/identity-credentials-workflows/commit/0b39af37748d8529449f99e7c71f679d54d6ad9f))
+
 ## [1.3.0](https://github.com/canonical/identity-credentials-workflows/compare/v1.2.1...v1.3.0) (2026-01-30)
 
 

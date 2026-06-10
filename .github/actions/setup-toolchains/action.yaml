@@ -1,0 +1,67 @@
+name: setup-toolchains
+description: install the requested toolchains
+inputs:
+  toolchains:
+    description: "Toolchains to install in comma-separated format. Supported toolchains are: go, python, typescript, rockcraft, snapcraft, charmcraft, juju-k8s, juju-machine."
+    required: true
+
+  python-version:
+    description: Python version to install (e.g., 3.10). Will install the version defined in the pyproject.toml file if not specified.
+    required: false
+    default: ""
+  go-version:
+    description: Go version to install (e.g., 1.20). Will install the version defined in the go.mod file if not specified.
+    required: false
+    default: ""
+
+  juju-channel:
+    description: Juju snap channel.
+    required: false
+    default: 3.6/stable
+  charmcraft-channel:
+    description: Charmcraft snap channel.
+    required: false
+    default: 3.x/stable
+  snapcraft-channel:
+    description: Snapcraft snap channel.
+    required: false
+    default: 8.x/stable
+  rockcraft-channel:
+    description: Rockcraft snap channel.
+    required: false
+    default: latest/stable
+  k8s-channel:
+    description: Kubernetes snap channel.
+    required: false
+    default: 1.36-classic/stable
+  lxd-channel:
+    description: LXD snap channel.
+    required: false
+    default: 6/stable
+
+  extra-snaps:
+    description: Extra snaps to install.
+    required: false
+    default: ""
+  extra-debs:
+    description: Extra deb packages to install.
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Install dependencies
+      shell: bash
+      env:
+        PYTHON_VERSION: ${{ inputs.python-version }}
+        GO_VERSION: ${{ inputs.go-version }}
+        JUJU_CHANNEL: ${{ inputs.juju-channel }}
+        CHARMCRAFT_CHANNEL: ${{ inputs.charmcraft-channel }}
+        SNAPCRAFT_CHANNEL: ${{ inputs.snapcraft-channel }}
+        ROCKCRAFT_CHANNEL: ${{ inputs.rockcraft-channel }}
+        K8S_CHANNEL: ${{ inputs.k8s-channel }}
+        LXD_CHANNEL: ${{ inputs.lxd-channel }}
+        EXTRA_SNAPS: ${{ inputs.extra-snaps }}
+        EXTRA_DEBS: ${{ inputs.extra-debs }}
+      run: |
+        just install-dependencies

@@ -1,0 +1,56 @@
+name: Release Please
+run-name: release {{ github.ref_name }}
+
+on:
+  push:
+    branches:
+      - main
+  workflow_call:
+    inputs:
+      target-branch:
+        description: Target branch for release
+        required: false
+        default: ${{ github.ref_name }}
+        type: string
+      config-file:
+        description: Path to release-please-config.json
+        required: false
+        default: release-please-config.json
+        type: string
+      manifest-file:
+        description: Path to .release-please-manifest.json
+        required: false
+        default: .release-please-manifest.json
+        type: string
+      include-component-in-tag:
+        description: Include component in release tag (for track branches and mono-repos)
+        required: false
+        default: false
+        type: boolean
+      auto-merge:
+        description: Auto-merge release PRs
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      PAT_TOKEN:
+        description: Personal access token for auto-merge (must have contents:write and pull-requests:write)
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Run Release Please
+        id: release
+        uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445 # v4
+        with:
+          token: ${{ secrets.PAT_TOKEN || github.token }}
+          target-branch: ${{ inputs.target-branch }}
+          config-file: ${{ inputs.config-file }}
+          manifest-file: ${{ inputs.manifest-file }}
+          include-component-in-tag: ${{ inputs.include-component-in-tag }}

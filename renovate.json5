@@ -6,8 +6,9 @@
   automergeType: "pr",
   platformAutomerge: true,
   schedule: ["at any time"],
+  # TODO: updatePinned: no
   lockFileMaintenance: {
-    enabled: true,
+    enabled: true, # TODO: disable
     schedule: ["before 4am on monday"],
   },
   timezone: "Etc/UTC",
