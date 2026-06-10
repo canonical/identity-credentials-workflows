@@ -1,0 +1,112 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: Publish Charm
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-key:
+        description: Artifact key from charm-build workflow output
+        required: true
+        type: string
+      destination_channel:
+        description: CharmHub channel to publish to
+        required: false
+        default: latest/edge
+        type: string
+      branch-name:
+        description: An additional branch name to append to the channel
+        required: false
+        default: ""
+        type: string
+      path:
+        description: Path to the charm directory (for monorepos)
+        required: false
+        default: .
+        type: string
+      charm-paths:
+        description: Comma-separated .charm file paths from charm-build output
+        required: false
+        default: ""
+        type: string
+      tag-prefix:
+        description: Tag prefix for GitHub releases (useful for monorepos with multiple charms)
+        required: false
+        default: ""
+        type: string
+      github-tag:
+        description: Whether to create a GitHub release tag
+        required: false
+        default: true
+        type: boolean
+      runner:
+        description: >
+          GitHub Actions runner label(s). Must match the arch of the built charm.
+          Use a JSON array string for self-hosted runners.
+        required: false
+        default: '"ubuntu-24.04"'
+        type: string
+    outputs:
+      channel:
+        description: "The release channel"
+        value: ${{ jobs.publish.outputs.channel }}
+    secrets:
+      CHARMCRAFT_AUTH:
+        required: true
+
+jobs:
+  publish:
+    name: Publish Charm
+    runs-on: ${{ fromJson(inputs.runner) }}
+    outputs:
+      channel: ${{ steps.channel.outputs.channel }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine publish channel
+        id: channel
+        env:
+          DESTINATION_CHANNEL: ${{ inputs.destination_channel }}
+          BRANCH_NAME: ${{ inputs.branch-name }}
+        run: |
+          channel="$DESTINATION_CHANNEL"
+          if [ -n "$BRANCH_NAME" ]; then
+            sanitized=$(echo "$BRANCH_NAME" | sed 's#[/_.]#-#g')
+            channel="$channel/$sanitized"
+          fi
+          echo "channel=$channel" >> "$GITHUB_OUTPUT"
+
+      - name: Download charm artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifacts-key }}
+          path: ${{ inputs.path }}
+
+      - name: List downloaded charms
+        working-directory: ${{ inputs.path }}
+        run: |
+          echo "Downloaded charms:"
+          ls -la *.charm
+
+      - name: Upload charm to Charmhub
+        uses: canonical/charming-actions/upload-charm@1753e0803f70445132e92acd45c905aba6473225 # 2.7.0
+        with:
+          credentials: ${{ secrets.CHARMCRAFT_AUTH }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          channel: ${{ steps.channel.outputs.channel }}
+          destructive-mode: false
+          charm-path: ${{ inputs.path }}
+          built-charm-path: ${{ inputs.charm-paths }}
+          github-tag: ${{ inputs.github-tag }}
+          tag-prefix: ${{ inputs.tag-prefix }}
+
+      - name: Archive charmcraft logs
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: charmcraft-logs-${{ inputs.tag-prefix }}
+          path: /home/runner/.local/state/charmcraft/log/*.log

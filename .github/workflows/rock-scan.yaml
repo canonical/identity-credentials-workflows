@@ -1,0 +1,111 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: Scan Rock
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-key:
+        description: Artifact key from rock-build workflow output
+        required: true
+        type: string
+      arch:
+        description: Architecture of the rock to scan
+        required: false
+        default: amd64
+        type: string
+      image-name:
+        description: Image name for scan reference (default from rockcraft.yaml)
+        required: false
+        default: ""
+        type: string
+      version:
+        description: Version for scan reference (default from version/VERSION)
+        required: false
+        default: ""
+        type: string
+      path:
+        description: Path to the rock directory
+        required: false
+        default: .
+        type: string
+      scan-severity:
+        description: Comma-separated Trivy severity levels
+        required: false
+        default: HIGH,CRITICAL
+        type: string
+
+jobs:
+  scan:
+    name: Trivy Scan (${{ inputs.arch }})
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Determine image reference
+        id: info
+        working-directory: ${{ inputs.path }}
+        env:
+          INPUT_IMAGE_NAME: ${{ inputs.image-name }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [[ -n "$INPUT_IMAGE_NAME" ]]; then
+            IMAGE_NAME="$INPUT_IMAGE_NAME"
+          else
+            IMAGE_NAME=$(yq -r '.name' rockcraft.yaml)
+          fi
+          echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$INPUT_VERSION" ]]; then
+            VERSION="$INPUT_VERSION"
+          elif [[ -f version/VERSION ]]; then
+            VERSION=$(cat version/VERSION)
+          else
+            VERSION=$(yq -r '.version' rockcraft.yaml)
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          IMAGE_REF="ghcr.io/${{ github.repository }}/${IMAGE_NAME}:${VERSION}-${{ inputs.arch }}"
+          echo "image-ref=$IMAGE_REF" >> "$GITHUB_OUTPUT"
+
+      - name: Install rockcraft for skopeo
+        run: sudo snap install rockcraft --classic --edge
+
+      - name: Download rock artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifacts-key }}
+          path: rocks
+
+      - name: Import rock
+        run: |
+          set -euo pipefail
+
+          IMAGE_REF="${{ steps.info.outputs.image-ref }}"
+
+          rock_file=$(ls rocks/*.rock | head -n 1)
+          echo "Importing $rock_file as $IMAGE_REF"
+          sudo rockcraft.skopeo --insecure-policy copy \
+            oci-archive:"$rock_file" \
+            docker-daemon:"$IMAGE_REF"
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@6c175e9c4083a92bbca2f9724c8a5e33bc2d97a5 # v0.30.0
+        with:
+          scan-type: 'image'
+          image-ref: ${{ steps.info.outputs.image-ref }}
+          format: 'sarif'
+          output: 'trivy-results-${{ inputs.arch }}.sarif'
+          severity: ${{ inputs.scan-severity }}
+          scanners: 'vuln'
+
+      - name: Upload SARIF results
+        if: always()
+        uses: github/codeql-action/upload-sarif@8aad20d150bbac5944a9f9d289da16a4b0d87c1e # v4.36.2
+        with:
+          sarif_file: "trivy-results-${{ inputs.arch }}.sarif"
+          category: "Trivy Rock Scan (${{ inputs.arch }})"

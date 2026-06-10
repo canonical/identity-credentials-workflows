@@ -1,0 +1,150 @@
+name: Publish Rock
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-key:
+        description: >
+          Artifact key pattern for downloading built rocks. Supports globs.
+          For single-arch: pass the exact artifacts-key from rock-build.
+          For multi-arch: pass a common prefix with a wildcard, e.g. '<sha>-build-myrock-*'
+        required: true
+        type: string
+      registry:
+        description: Container registry URL
+        required: false
+        default: ghcr.io
+        type: string
+      image-name:
+        description: Override image name (default from rockcraft.yaml)
+        required: false
+        default: ""
+        type: string
+      version:
+        description: Override version (default from version/VERSION or rockcraft.yaml)
+        required: false
+        default: ""
+        type: string
+      tag-latest:
+        description: Also push latest tag manifest
+        required: false
+        default: true
+        type: boolean
+      architectures:
+        description: >
+          JSON array of architectures to publish, e.g. '["amd64", "arm64"]'.
+          Must match the architectures used in rock-build.
+        required: true
+        type: string
+      path:
+        description: Path to the rock directory
+        required: false
+        default: .
+        type: string
+
+jobs:
+  publish:
+    name: Publish Rock
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+
+      - name: Install yq
+        run: sudo snap install yq
+
+      - name: Determine image name and version
+        id: info
+        working-directory: ${{ inputs.path }}
+        env:
+          INPUT_IMAGE_NAME: ${{ inputs.image-name }}
+          INPUT_VERSION: ${{ inputs.version }}
+          INPUT_REGISTRY: ${{ inputs.registry }}
+        run: |
+          if [[ -n "$INPUT_IMAGE_NAME" ]]; then
+            IMAGE_NAME="$INPUT_IMAGE_NAME"
+          else
+            IMAGE_NAME=$(yq -r '.name' rockcraft.yaml)
+          fi
+          echo "image=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+
+          if [[ -n "$INPUT_VERSION" ]]; then
+            VERSION="$INPUT_VERSION"
+          elif [[ -f version/VERSION ]]; then
+            VERSION=$(cat version/VERSION)
+          else
+            VERSION=$(yq -r '.version' rockcraft.yaml)
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+          echo "registry=$INPUT_REGISTRY" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to container registry
+        uses: docker/login-action@74a5d142397b4f367a81961eba4e8cd7edddf772 # v3
+        with:
+          registry: ${{ steps.info.outputs.registry }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install rockcraft for skopeo
+        run: sudo snap install rockcraft --classic --edge
+
+      - name: Download all rock artifacts
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: ${{ inputs.artifacts-key }}
+          path: rocks
+          merge-multiple: true
+
+      - name: List downloaded rocks
+        run: ls -la rocks/
+
+      - name: Import and push per-architecture images
+        env:
+          ARCHITECTURES: ${{ inputs.architectures }}
+          TAG_LATEST: ${{ inputs.tag-latest }}
+        run: |
+          set -euo pipefail
+
+          REGISTRY="${{ steps.info.outputs.registry }}"
+          IMAGE_NAME="${{ steps.info.outputs.image }}"
+          VERSION="${{ steps.info.outputs.version }}"
+          REPO="${{ github.repository }}"
+
+          PREFIX="${REGISTRY}/${REPO}/${IMAGE_NAME}"
+
+          # Parse architectures from input
+          mapfile -t ARCH_LIST < <(echo "$ARCHITECTURES" | jq -r '.[]')
+
+          cd rocks
+          for arch in "${ARCH_LIST[@]}"; do
+            rock_file=$(ls *_"${arch}".rock 2>/dev/null | head -n 1)
+            if [[ -z "$rock_file" ]]; then
+              echo "::error::No rock file found for architecture: $arch"
+              exit 1
+            fi
+
+            echo "Importing $rock_file as ${PREFIX}:${VERSION}-${arch}"
+            sudo rockcraft.skopeo --insecure-policy copy \
+              oci-archive:"$rock_file" \
+              docker-daemon:"${PREFIX}:${VERSION}-${arch}"
+
+            docker push "${PREFIX}:${VERSION}-${arch}"
+          done
+          cd ..
+
+          # Build manifest list
+          echo "Creating multi-arch manifest: ${PREFIX}:${VERSION}"
+          MANIFEST_ARGS=()
+          for arch in "${ARCH_LIST[@]}"; do
+            MANIFEST_ARGS+=("${PREFIX}:${VERSION}-${arch}")
+          done
+          docker manifest create "${PREFIX}:${VERSION}" "${MANIFEST_ARGS[@]}"
+          docker manifest push "${PREFIX}:${VERSION}"
+
+          # Push latest manifest
+          if [[ "$TAG_LATEST" == "true" ]]; then
+            echo "Creating latest manifest: ${PREFIX}:latest"
+            docker manifest create "${PREFIX}:latest" "${MANIFEST_ARGS[@]}"
+            docker manifest push "${PREFIX}:latest"
+          fi

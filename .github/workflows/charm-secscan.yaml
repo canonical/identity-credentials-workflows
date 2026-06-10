@@ -1,0 +1,96 @@
+name: Charm Security Scan
+
+on:
+  workflow_call:
+    inputs:
+      charm:
+        description: Charm name on CharmHub (for example vault-k8s)
+        required: true
+        type: string
+      track:
+        description: Track to scan (for example 2.0)
+        required: true
+        type: string
+      channel:
+        description: Channel to scan (for example edge)
+        required: true
+        type: string
+      arch:
+        description: Architecture to download and scan
+        required: false
+        default: amd64
+        type: string
+      create-issue:
+        description: Create GitHub issue on CVE findings
+        required: false
+        default: true
+        type: boolean
+      fail-on-cve:
+        description: Fail the job on CVE findings
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      secscan-return-code:
+        description: Return code of secscan
+        value: ${{ jobs.secscan.outputs.secscan-return-code }}
+
+jobs:
+  secscan:
+    runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
+    outputs:
+      secscan-return-code: ${{ steps.secscan.outputs.secscan-return-code }}
+    steps:
+      - name: Install charmcraft
+        run: sudo snap install charmcraft --classic
+
+      - name: Install secscan client
+        run: |
+          sudo snap install canonical-secscan-client
+          sudo snap connect canonical-secscan-client:home system:home
+
+      - name: Download charm from CharmHub
+        env:
+          CHARM: ${{ inputs.charm }}
+          TRACK: ${{ inputs.track }}
+          CHANNEL: ${{ inputs.channel }}
+          ARCH: ${{ inputs.arch }}
+        run: |
+          set -euo pipefail
+          charmcraft download "$CHARM" \
+            --channel "$TRACK/$CHANNEL" \
+            --architecture "$ARCH"
+
+      - name: Run secscan
+        id: secscan
+        run: |
+          set +e
+          set -o pipefail
+          CHARM_FILE=$(ls -1 *.charm | head -n 1)
+          secscan-client --batch submit \
+            --scanner trivy \
+            --type package \
+            --format charm \
+            "$CHARM_FILE" \
+            --wait-and-print | tee secscan.result
+          RC=$?
+          echo "secscan-return-code=$RC" >> "$GITHUB_OUTPUT"
+          set +o pipefail
+          set -e
+
+      - name: Create issue on CVE findings
+        if: ${{ inputs.create-issue && steps.secscan.outputs.secscan-return-code != '0' }}
+        run: |
+          echo "please check job ${{ github.run_id }}" >> secscan.result
+          gh issue create -R "${{ github.repository }}" \
+            --label bug \
+            --title "Release compromised by CVE" \
+            -F secscan.result
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+      - name: Fail job on CVE findings
+        if: ${{ inputs.fail-on-cve && steps.secscan.outputs.secscan-return-code != '0' }}
+        run: |
+          echo "secscan found issues, failing the job."
+          exit 1

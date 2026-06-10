@@ -1,0 +1,105 @@
+name: Security Scan
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-key:
+        description: Key for the artifact to download
+        required: true
+        type: string
+      artifact-paths:
+        description: Comma-separated paths of artifacts to scan
+        required: true
+        type: string
+      artifacts-type:
+        description: secscan type modifier (e.g. package)
+        required: false
+        default: package
+        type: string
+      artifacts-format:
+        description: secscan format modifier (charm, rock, snap)
+        required: true
+        type: string
+      create-issue:
+        description: Create GitHub issue on failure
+        required: false
+        default: true
+        type: boolean
+      fail-on-cve:
+        description: Fail the job on CVE findings
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      secscan-return-code:
+        description: Return code of secscan
+        value: ${{ jobs.inputs-vetting.outputs.return-code }}
+
+jobs:
+  inputs-vetting:
+    runs-on: ubuntu-24.04
+    outputs:
+      paths: ${{ steps.parse.outputs.paths }}
+      return-code: ${{ steps.export.outputs.return-code }}
+    steps:
+      - id: parse
+        env:
+          ARTIFACT_PATHS: ${{ inputs.artifact-paths }}
+        run: |
+          PATHS=$(echo "$ARTIFACT_PATHS" | jq -R -r 'split(",")')
+          echo "paths=$PATHS" >> "$GITHUB_OUTPUT"
+
+      - name: Export placeholder return code
+        id: export
+        run: echo "return-code=0" >> "$GITHUB_OUTPUT"
+
+  secscan:
+    needs: inputs-vetting
+    strategy:
+      fail-fast: false
+      matrix:
+        artifact: ${{ fromJson(needs.inputs-vetting.outputs.paths) }}
+    runs-on: [self-hosted, self-hosted-linux-amd64-jammy-private-endpoint-medium]
+    steps:
+      - name: Install secscan client
+        run: |
+          sudo snap install canonical-secscan-client
+          sudo snap connect canonical-secscan-client:home system:home
+
+      - name: Download artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifacts-key }}
+          merge-multiple: true
+
+      - name: Run secscan
+        id: secscan
+        env:
+          ARTIFACTS_TYPE: ${{ inputs.artifacts-type }}
+          ARTIFACTS_FORMAT: ${{ inputs.artifacts-format }}
+          FAIL_ON_CVE: ${{ inputs.fail-on-cve }}
+        run: |
+          set +e
+          secscan-client --batch submit \
+            --scanner trivy \
+            --type "$ARTIFACTS_TYPE" \
+            --format "$ARTIFACTS_FORMAT" \
+            "${{ matrix.artifact }}" \
+            --wait-and-print | tee secscan.result
+          RC=$?
+          echo "secscan-return-code=$RC" >> "$GITHUB_OUTPUT"
+          set -e
+          if [ "$RC" -ne 0 ] && [ "$FAIL_ON_CVE" = "true" ]; then
+            exit 1
+          fi
+
+      - name: Create issue on failure
+        if: ${{ failure() && inputs.create-issue }}
+        run: |
+          echo "please check job ${{ github.run_id }}" >> secscan.result
+          gh issue create -R "${{ github.repository }}" \
+            --label bug \
+            --title "Release compromised by CVE" \
+            -F secscan.result
+        env:
+          GH_TOKEN: ${{ github.token }}

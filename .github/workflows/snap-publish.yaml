@@ -1,0 +1,45 @@
+# Copyright 2025 Canonical Ltd.
+# See LICENSE file for licensing details.
+
+name: Publish Snap
+
+on:
+  workflow_call:
+    inputs:
+      artifacts-key:
+        description: Artifact key from snap-build workflow output
+        required: true
+        type: string
+      track:
+        description: Snap track
+        required: false
+        default: latest
+        type: string
+      channel:
+        description: Snap channel
+        required: false
+        default: edge
+        type: string
+    secrets:
+      SNAPCRAFT_STORE_CREDENTIALS:
+        required: true
+
+jobs:
+  publish:
+    name: Publish Snap
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Download snap artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ inputs.artifacts-key }}
+
+      - name: Publish snap
+        env:
+          SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+          RELEASE_CHANNEL: ${{ inputs.track }}/${{ inputs.channel }}
+        run: |
+          set -euo pipefail
+          snap_file=$(ls *.snap | head -n 1)
+          echo "Publishing $snap_file to $RELEASE_CHANNEL"
+          snapcraft upload "$snap_file" --release "$RELEASE_CHANNEL"
