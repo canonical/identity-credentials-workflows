@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.6](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.5...v2.0.6) (2026-06-10)
+
+
+### Bug Fixes
+
+* Trigger release with updated dependencies ([6b9167a](https://github.com/canonical/identity-credentials-workflows/commit/6b9167a25e7608fde44492d4d13e53c8d3f1819a))
+
 ## [2.0.5](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.4...v2.0.5) (2026-06-09)
 
 
