@@ -2,6 +2,9 @@ name: Lint PR Title
 on:
   workflow_call:
 
+permissions:
+  pull-requests: read
+
 jobs:
   lint-pr-title:
     runs-on: ubuntu-24.04
