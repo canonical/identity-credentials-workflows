@@ -6,7 +6,7 @@
   automergeType: "pr",
   platformAutomerge: true,
   schedule: ["at any time"],
-  updatePinned: no
+  updatePinned: false,
   lockFileMaintenance: {
     enabled: false,
     schedule: ["before 4am on monday"],
