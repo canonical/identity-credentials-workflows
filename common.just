@@ -417,11 +417,11 @@ publish:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "$PUBLISH_CHARM" = "true" ] && {{ j }} publish-charm
-    [ "$PUBLISH_SNAP" = "true" ] && {{ j }} publish-snap
-    [ "$PUBLISH_ROCK" = "true" ] && {{ j }} publish-rock
-    [ "$PUBLISH_PYTHON" = "true" ] && {{ j }} publish-python
-    [ "$PUBLISH_BIN" = "true" ] && {{ j }} publish-bin
+    [ "${PUBLISH_CHARM:-false}" = "true" ] && {{ j }} publish-charm
+    [ "${PUBLISH_SNAP:-false}" = "true" ] && {{ j }} publish-snap
+    [ "${PUBLISH_ROCK:-false}" = "true" ] && {{ j }} publish-rock
+    [ "${PUBLISH_PYTHON:-false}" = "true" ] && {{ j }} publish-python
+    [ "${PUBLISH_BIN:-false}" = "true" ] && {{ j }} publish-bin
 
 # publish a charm to CharmHub
 [private]
