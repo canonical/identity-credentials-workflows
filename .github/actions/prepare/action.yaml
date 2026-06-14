@@ -23,6 +23,7 @@ runs:
       uses: actions/checkout@v6
       with:
         repository: "canonical/identity-credentials-workflows"
+        path: shared-workflows
         sparse-checkout-cone-mode: false
         sparse-checkout: |
           common.just
@@ -30,9 +31,11 @@ runs:
     - name: merge justfiles
       shell: bash
       run: |
-        touch justfile
-        cat common.just justfile > justfile.tmp && mv justfile.tmp justfile
+        mkdir -p scripts
+        cp -r shared-workflows/scripts/* scripts/
 
+        touch justfile
+        cat shared-workflows/common.just justfile > justfile.tmp && mv justfile.tmp justfile
     - name: verify justfiles
       shell: bash
       run: |

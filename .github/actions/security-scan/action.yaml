@@ -10,7 +10,7 @@ inputs:
     description: Enable scanning for KEV's in the repository
     required: false
     default: "false"
-  go-enabled:
+  go-scan-enabled:
     description: Whether to run configured security scans for Golang projects.
     required: false
     default: "false"
@@ -22,4 +22,4 @@ runs:
       run: just working-directory=${{ inputs['working-directory }} security-scan']
       env:
         KEV_SCAN_ENABLED: ${{ inputs['kev-scan-enabled'] }}
-        GO_ENABLED: ${{ inputs['go-enabled'] }}
+        GO_SCAN_ENABLED: ${{ inputs['go-scan-enabled'] }}
