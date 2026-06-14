@@ -65,7 +65,6 @@ The integration test script is designed to run the integration tests for the pro
 
 Unlike the other actions, the release script should only run in the main repository. It should be the only running workflow in release branches. It expects the appropriate secrets to be available in the repository to be able to release the project.
 
-
 ### Working with the justfile
 
 You can override the exact steps you need to override in the justfile, and call the original steps via the module prefix. There is an example justfile in the `examples/` folder.

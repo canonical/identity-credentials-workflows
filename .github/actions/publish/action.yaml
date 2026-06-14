@@ -1,70 +1,57 @@
 name: publish
-description: Release or publish an artifact.
+description: Publish an artifact.
 inputs:
-  path:
-    description: Project path to release.
+  working-directory:
+    description: Working directory to run the publish command in.
     required: false
     default: .
-  channel:
-    description: Charmhub channel.
-    required: false
-    default: latest/edge
-  branch-name:
-    description: Branch suffix to append to the channel.
-    required: false
-    default: ""
-  charm-paths:
-    description: Comma-separated built charm paths.
-    required: false
-    default: ""
+
   snap-file:
     description: Snap artifact to publish.
     required: false
     default: ""
-  track:
+  snap-branch-name:
+    description: Branch suffix to append to the channel.
+    required: false
+    default: ""
+  snap-track:
     description: Snap track.
     required: false
     default: latest
-  risk:
-    description: Snap risk.
+  rock-file:
+    description: Rock artifact to publish.
     required: false
-    default: edge
-  registry:
+    default: ""
+  rock-registry:
     description: Container registry for rocks.
     required: false
     default: ghcr.io
-  image-name:
-    description: Rock image name override.
-    required: false
-    default: ""
-  version:
-    description: Rock version override.
-    required: false
-    default: ""
-  architectures:
+  rock-architectures:
     description: JSON array of rock architectures.
     required: false
     default: '["amd64"]'
-  tag-latest:
-    description: Also publish latest for rocks.
+  charm-file:
+    description: Charm artifact to publish.
     required: false
-    default: "true"
+    default: ""
+  charm-channel:
+    description: Charmhub channel.
+    required: false
+    default: latest
+
 runs:
   using: composite
   steps:
     - name: Release artifact
       shell: bash
       run: |
-        just release \
-          "${{ inputs['path'] }}" \
-          "${{ inputs['channel'] }}" \
-          "${{ inputs['branch-name'] }}" \
-          "${{ inputs['charm-paths'] }}" \
-          "${{ inputs['snap-file'] }}" \
-          "${{ inputs['track'] }}" \
-          "${{ inputs['risk'] }}" \
-          "${{ inputs['registry'] }}" \
-          "${{ inputs['image-name'] }}" \
-          "${{ inputs['version'] }}" \
-          '${{ inputs['architectures'] }}' \
-          "${{ inputs['tag-latest'] }}"
+        just working-directory=${{ inputs['working-directory'] }} publish
+      env:
+        SNAP_FILE: ${{ inputs['snap-file'] }}
+        SNAP_BRANCH_NAME: ${{ inputs['snap-branch-name'] }}
+        SNAP_TRACK: ${{ inputs['snap-track'] }}
+        ROCK_FILE: ${{ inputs['rock-file'] }}
+        ROCK_REGISTRY: ${{ inputs['rock-registry'] }}
+        ROCK_ARCHITECTURES: ${{ inputs['rock-architectures'] }}
+        CHARM_FILE: ${{ inputs['charm-file'] }}
+        CHARM_CHANNEL: ${{ inputs['charm-channel'] }}

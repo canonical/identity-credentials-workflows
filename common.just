@@ -39,11 +39,9 @@ setup:
 
     sudo snap install yq
     extra_snaps=($EXTRA_SNAPS)
-    if [ -z "${EXTRA_SNAPS+x}" ]; then
-        for snap in "${extra_snaps[@]}"; do
-            sudo snap install "$snap" || true
-        done
-    fi
+    for snap in "${extra_snaps[@]}"; do
+        sudo snap install "$snap" || true
+    done
 
     if [ -z "${EXTRA_DEBS+x}" ]; then
         sudo apt-get update
@@ -414,6 +412,7 @@ test-integration-rock:
 # Publishing
 # =============================================================================
 
+# publish built artifacts to their respective stores/registries
 publish:
     #!/usr/bin/env bash
     set -euo pipefail
@@ -421,6 +420,7 @@ publish:
     [ "$PUBLISH_CHARM" = "true" ] && {{ j }} publish-charm
     [ "$PUBLISH_SNAP" = "true" ] && {{ j }} publish-snap
     [ "$PUBLISH_ROCK" = "true" ] && {{ j }} publish-rock
+    [ "$PUBLISH_PYTHON" = "true" ] && {{ j }} publish-python
     [ "$PUBLISH_BIN" = "true" ] && {{ j }} publish-bin
 
 # publish a charm to CharmHub
@@ -428,26 +428,76 @@ publish:
 publish-charm:
     #!/usr/bin/env bash
     set -euo pipefail
-    cd "path"
 
-    CHANNEL="channel"
-    if [ -n "branch-name" ]; then
-        SANITIZED=$(echo "branch-name" | sed 's#[/_.]#-#g')
-        CHANNEL="${CHANNEL}/${SANITIZED}"
+    # Determine the destination channel, optionally suffixed with a sanitized
+    # branch name (e.g. latest/edge/my-feature-branch).
+    channel="${DESTINATION_CHANNEL:-latest/edge}"
+    if [ -n "${BRANCH_NAME:-}" ]; then
+        sanitized=$(echo "$BRANCH_NAME" | sed 's#[/_.]#-#g')
+        channel="$channel/$sanitized"
+    fi
+    echo "Publishing charm(s) to channel: $channel"
+
+    # Resolve the list of built charms to upload. CHARM_PATHS is a
+    # comma-separated list produced by the build step; fall back to globbing.
+    if [ -n "${CHARM_PATHS:-}" ]; then
+        IFS=',' read -ra charms <<< "$CHARM_PATHS"
+    else
+        mapfile -t charms < <(ls ./*.charm 2>/dev/null)
     fi
 
-    echo "Publishing charm to channel: ${CHANNEL}"
-    echo "Charm paths: charm-paths"
-    echo "Charm publishing is handled by canonical/charming-actions/upload-charm in the workflow"
+    if [ "${#charms[@]}" -eq 0 ]; then
+        echo "::error::No charm files found to publish"
+        exit 1
+    fi
+
+    # The charm name is required to release an uploaded revision to a channel.
+    charm_name="${CHARM_NAME:-}"
+    if [ -z "$charm_name" ]; then
+        if [ -f charmcraft.yaml ]; then
+            charm_name=$(yq -r '.name' charmcraft.yaml)
+        elif [ -f metadata.yaml ]; then
+            charm_name=$(yq -r '.name' metadata.yaml)
+        fi
+    fi
+
+    if [ -z "$charm_name" ]; then
+        echo "::error::Unable to determine charm name (set CHARM_NAME)"
+        exit 1
+    fi
+
+    for charm in "${charms[@]}"; do
+        charm=$(echo "$charm" | xargs)  # trim surrounding whitespace
+        echo "Uploading $charm"
+        revision=$(charmcraft upload "$charm" --format json | yq -r '.revision')
+        echo "Releasing $charm_name revision $revision to $channel"
+        charmcraft release "$charm_name" --revision "$revision" --channel "$channel"
+    done
 
 # publish a snap to the Snap Store
 [private]
 publish-snap:
     #!/usr/bin/env bash
     set -euo pipefail
-    RELEASE_CHANNEL="track }}/channel"
-    echo "Publishing snap-file to ${RELEASE_CHANNEL}"
-    snapcraft upload "snap-file" --release "${RELEASE_CHANNEL}"
+
+    # Channel is track/risk, optionally suffixed with a branch (track/risk/branch).
+    release_channel="${TRACK:-latest}/${RISK:-edge}"
+    if [ -n "${SNAP_BRANCH_NAME:-}" ]; then
+        release_channel="$release_channel/$SNAP_BRANCH_NAME"
+    fi
+
+    snap_file="${SNAP_FILE:-}"
+    if [ -z "$snap_file" ]; then
+        snap_file=$(ls ./*.snap 2>/dev/null | head -n 1)
+    fi
+
+    if [ -z "$snap_file" ]; then
+        echo "::error::No snap file found to publish"
+        exit 1
+    fi
+
+    echo "Publishing $snap_file to $release_channel"
+    snapcraft upload "$snap_file" --release "$release_channel"
 
 # publish a rock to a container registry
 [private]
@@ -455,14 +505,29 @@ publish-rock:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    IMAGE_NAME=$(yq -r '.name' rockcraft.yaml)
-    VERSION=$(yq -r '.version' rockcraft.yaml)
+    registry="${REGISTRY:-ghcr.io}"
 
-    REPO="${GITHUB_REPOSITORY:-canonical/${IMAGE_NAME}}"
-    PREFIX="registry/${REPO}/${IMAGE_NAME}"
+    # Image name and version default to the values in rockcraft.yaml but can be
+    # overridden via env (and version may come from a version/VERSION file).
+    image_name="${IMAGE_NAME:-}"
+    if [ -z "$image_name" ]; then
+        image_name=$(yq -r '.name' rockcraft.yaml)
+    fi
 
-    # Parse architectures
-    mapfile -t ARCH_LIST < <(echo 'architectures' | jq -r '.[]')
+    version="${VERSION:-}"
+    if [ -z "$version" ]; then
+        if [ -f version/VERSION ]; then
+            version=$(cat version/VERSION)
+        else
+            version=$(yq -r '.version' rockcraft.yaml)
+        fi
+    fi
+
+    repo="${GITHUB_REPOSITORY:-canonical/${image_name}}"
+    prefix="${registry}/${repo}/${image_name}"
+
+    # Parse the JSON array of architectures, e.g. '["amd64", "arm64"]'.
+    mapfile -t ARCH_LIST < <(echo "${ARCHITECTURES:-[\"amd64\"]}" | jq -r '.[]')
 
     for arch in "${ARCH_LIST[@]}"; do
         rock_file=$(ls *_"${arch}".rock 2>/dev/null | head -n 1)
@@ -471,89 +536,49 @@ publish-rock:
             exit 1
         fi
 
-        echo "Importing $rock_file as ${PREFIX}:${VERSION}-${arch}"
+        echo "Importing $rock_file as ${prefix}:${version}-${arch}"
         sudo rockcraft.skopeo --insecure-policy copy \
             oci-archive:"$rock_file" \
-            docker-daemon:"${PREFIX}:${VERSION}-${arch}"
-        docker push "${PREFIX}:${VERSION}-${arch}"
+            docker-daemon:"${prefix}:${version}-${arch}"
+        docker push "${prefix}:${version}-${arch}"
     done
 
-    # Build manifest list
-    echo "Creating multi-arch manifest: ${PREFIX}:${VERSION}"
+    # Build and push a multi-arch manifest list pointing at the per-arch images.
+    echo "Creating multi-arch manifest: ${prefix}:${version}"
     MANIFEST_ARGS=()
     for arch in "${ARCH_LIST[@]}"; do
-        MANIFEST_ARGS+=("${PREFIX}:${VERSION}-${arch}")
+        MANIFEST_ARGS+=("${prefix}:${version}-${arch}")
     done
-    docker manifest create "${PREFIX}:${VERSION}" "${MANIFEST_ARGS[@]}"
-    docker manifest push "${PREFIX}:${VERSION}"
+    docker manifest create "${prefix}:${version}" "${MANIFEST_ARGS[@]}"
+    docker manifest push "${prefix}:${version}"
 
-    if [ "tag-latest" = "true" ]; then
-        echo "Creating latest manifest: ${PREFIX}:latest"
-        docker manifest create "${PREFIX}:latest" "${MANIFEST_ARGS[@]}"
-        docker manifest push "${PREFIX}:latest"
+    if [ "${TAG_LATEST:-true}" = "true" ]; then
+        echo "Creating latest manifest: ${prefix}:latest"
+        docker manifest create "${prefix}:latest" "${MANIFEST_ARGS[@]}"
+        docker manifest push "${prefix}:latest"
     fi
 
-# publish a package to pypi
+# publish a package to PyPI
 [private]
 publish-python:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    uv build
+    uv publish
 
-# publish a binary to the configured store
+# publish a binary by auto-detecting the craft type in the working directory
 [private]
 publish-bin:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    cd "path"
-    if [ -f "charmcraft.yaml" ]; then
-        just publish-charm "path" "channel" "branch-name" "charm-paths"
-    elif [ -f "snapcraft.yaml" ]; then
-        snap_file="snap-file"
-        if [ -z "$snap_file" ]; then
-            snap_file=$(ls *.snap | head -n 1)
-        fi
-        just publish-snap "$snap_file" "track" " risk"
-    elif [ -f "rockcraft.yaml" ]; then
-        just publish-rock "path" "registry" "image-name" " version" ' architectures' " tag-latest"
+    if [ -f charmcraft.yaml ]; then
+        {{ j }} publish-charm
+    elif [ -f snapcraft.yaml ]; then
+        {{ j }} publish-snap
+    elif [ -f rockcraft.yaml ]; then
+        {{ j }} publish-rock
     else
-        echo "No recognized craft type found in path"
+        echo "::error::No recognized craft type found in $(pwd)"
         exit 1
     fi
-
-# =============================================================================
-# TODO: Promote
-# =============================================================================
-
-promote:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    case "current-risk" in
-        edge) TARGET_RISK="beta" ;;
-        beta) TARGET_RISK="candidate" ;;
-        candidate) TARGET_RISK="stable" ;;
-        stable) echo "Already at stable, nothing to promote"; exit 1 ;;
-        *) echo "Unknown risk level: current-risk"; exit 1 ;;
-    esac
-
-    echo "Promoting craft-name }} from track }}/ current-risk to  track/${TARGET_RISK}"
-
-    case "craft-type" in
-        charm)
-            charmcraft release "craft-name }}" --channel=" track/${TARGET_RISK}"
-            ;;
-        snap)
-            snapcraft promote "craft-name }}" --from-channel="track }}/ current-risk" --to-channel=" track/${TARGET_RISK}" --yes
-            ;;
-        rock)
-            echo "Rock promotion requires re-tagging the container image"
-            echo "This should be handled via the container registry"
-            ;;
-        *)
-            echo "Unknown craft type: craft-type"
-            exit 1
-            ;;
-    esac
