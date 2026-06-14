@@ -180,7 +180,7 @@ lint-charmcraft: setup-charmcraft
     charmcraft expand-extensions
 
 [private]
-lint-snap: setup-snapcraft
+lint-snapcraft: setup-snapcraft
     #!/usr/bin/env bash
     set -euo pipefail
     @echo "linting snap..."
@@ -188,7 +188,7 @@ lint-snap: setup-snapcraft
     snapcraft lint
 
 [private]
-lint-rock: setup-rockcraft
+lint-rockcraft: setup-rockcraft
     #!/usr/bin/env bash
     set -euo pipefail
     @echo "linting rock..."
