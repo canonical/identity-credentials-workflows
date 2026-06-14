@@ -2,7 +2,7 @@ name: setup-toolchains
 description: install the requested toolchains
 inputs:
   toolchains:
-    description: "Toolchains to install in comma-separated format. Supported toolchains are: go, python, typescript, rockcraft, snapcraft, charmcraft, juju-k8s, juju-machine."
+    description: "Toolchains to install in space-separated format. Supported toolchains are: go, python, typescript, rockcraft, snapcraft, charmcraft, juju-k8s, juju-machine."
     required: true
 
   python-version:

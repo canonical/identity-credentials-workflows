@@ -38,9 +38,9 @@ runs:
       shell: bash
       run: just working-directory=${{ inputs['working-directory'] }} build
       env:
-        BUILD_GO: ${{ inputs['BUILD_GO'] }}
-        BUILD_PYTHON: ${{ inputs['BUILD_PYTHON'] }}
-        BUILD_TYPESCRIPT: ${{ inputs['BUILD_TYPESCRIPT'] }}
-        BUILD_CHARM: ${{ inputs['BUILD_CHARM'] }}
-        BUILD_SNAP: ${{ inputs['BUILD_SNAP'] }}
-        BUILD_ROCK: ${{ inputs['BUILD_ROCK'] }}
+        BUILD_GO: ${{ inputs['build-go'] }}
+        BUILD_PYTHON: ${{ inputs['build-python'] }}
+        BUILD_TYPESCRIPT: ${{ inputs['build-typescript'] }}
+        BUILD_CHARM: ${{ inputs['build-charm'] }}
+        BUILD_SNAP: ${{ inputs['build-snap'] }}
+        BUILD_ROCK: ${{ inputs['build-rock'] }}

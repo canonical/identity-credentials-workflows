@@ -43,7 +43,7 @@ setup:
         sudo snap install "$snap" || true
     done
 
-    if [ -z "${EXTRA_DEBS+x}" ]; then
+    if [ -z "${EXTRA_DEBS:-}" ]; then
         sudo apt-get update
         sudo apt-get install -y $EXTRA_DEBS
     fi
