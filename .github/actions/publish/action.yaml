@@ -56,15 +56,15 @@ runs:
       shell: bash
       run: |
         just release \
-          "${{ inputs.path }}" \
-          "${{ inputs.channel }}" \
-          "${{ inputs.branch-name }}" \
-          "${{ inputs.charm-paths }}" \
-          "${{ inputs.snap-file }}" \
-          "${{ inputs.track }}" \
-          "${{ inputs.risk }}" \
-          "${{ inputs.registry }}" \
-          "${{ inputs.image-name }}" \
-          "${{ inputs.version }}" \
-          '${{ inputs.architectures }}' \
-          "${{ inputs.tag-latest }}"
+          "${{ inputs['path'] }}" \
+          "${{ inputs['channel'] }}" \
+          "${{ inputs['branch-name'] }}" \
+          "${{ inputs['charm-paths'] }}" \
+          "${{ inputs['snap-file'] }}" \
+          "${{ inputs['track'] }}" \
+          "${{ inputs['risk'] }}" \
+          "${{ inputs['registry'] }}" \
+          "${{ inputs['image-name'] }}" \
+          "${{ inputs['version'] }}" \
+          '${{ inputs['architectures'] }}' \
+          "${{ inputs['tag-latest'] }}"

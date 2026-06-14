@@ -53,15 +53,15 @@ runs:
     - name: Install dependencies
       shell: bash
       env:
-        PYTHON_VERSION: ${{ inputs.python-version }}
-        GO_VERSION: ${{ inputs.go-version }}
-        JUJU_CHANNEL: ${{ inputs.juju-channel }}
-        CHARMCRAFT_CHANNEL: ${{ inputs.charmcraft-channel }}
-        SNAPCRAFT_CHANNEL: ${{ inputs.snapcraft-channel }}
-        ROCKCRAFT_CHANNEL: ${{ inputs.rockcraft-channel }}
-        K8S_CHANNEL: ${{ inputs.k8s-channel }}
-        LXD_CHANNEL: ${{ inputs.lxd-channel }}
-        EXTRA_SNAPS: ${{ inputs.extra-snaps }}
-        EXTRA_DEBS: ${{ inputs.extra-debs }}
+        PYTHON_VERSION: ${{ inputs['python-version'] }}
+        GO_VERSION: ${{ inputs['go-version'] }}
+        JUJU_CHANNEL: ${{ inputs['juju-channel'] }}
+        CHARMCRAFT_CHANNEL: ${{ inputs['charmcraft-channel'] }}
+        SNAPCRAFT_CHANNEL: ${{ inputs['snapcraft-channel'] }}
+        ROCKCRAFT_CHANNEL: ${{ inputs['rockcraft-channel'] }}
+        K8S_CHANNEL: ${{ inputs['k8s-channel'] }}
+        LXD_CHANNEL: ${{ inputs['lxd-channel'] }}
+        EXTRA_SNAPS: ${{ inputs['extra-snaps'] }}
+        EXTRA_DEBS: ${{ inputs['extra-debs'] }}
       run: |
         just install-dependencies

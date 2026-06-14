@@ -6,32 +6,32 @@ inputs:
     required: false
     default: .
 
-  go-enable:
+  go-enabled:
     description: enable code health tools for golang
     required: false
     default: "false"
-  python-enable:
+  python-enabled:
     description: enable code health tools for python
     required: false
     default: "false"
-  typescript-enable:
+  typescript-enabled:
     description: enable code health tools for typescript
     required: false
     default: "false"
-  charmcraft-enable:
+  charmcraft-enabled:
     description: enable code health tools for the charmcraft.yaml file
     required: false
     default: "false"
-  snapcraft-enable:
+  snapcraft-enabled:
     description: enable code health tools for the snapcraft.yaml file
     required: false
     default: "false"
-  rockcraft-enable:
+  rockcraft-enabled:
     description: enable code health tools for the rockcraft.yaml file
     required: false
     default: "false"
 
-  grafana-enable:
+  grafana-enabled:
     description: enable code health tools for grafana dashboards
     required: false
     default: "false"
@@ -44,14 +44,14 @@ runs:
   steps:
     - name: Run code quality checks
       shell: bash
-      run: just working-directory=${{ inputs.working-directory }} code-health
+      run: just working-directory=${{ inputs['working-directory'] }} code-health
       env:
-        GO_ENABLE: ${{ inputs.go-enable }}
-        PYTHON_ENABLE: ${{ inputs.python-enable }}
-        TYPESCRIPT_ENABLE: ${{ inputs.typescript-enable }}
+        GO_ENABLED: ${{ inputs['go-enabled'] }}
+        PYTHON_ENABLED: ${{ inputs['python-enabled'] }}
+        TYPESCRIPT_ENABLED: ${{ inputs['typescript-enabled'] }}
 
-        CHARMCRAFT_ENABLE: ${{ inputs.charmcraft-enable }}
-        SNAPCRAFT_ENABLE: ${{ inputs.snapcraft-enable }}
-        ROCKCRAFT_ENABLE: ${{ inputs.rockcraft-enable }}
-        GRAFANA_ENABLE: ${{ inputs.grafana-enable }}
-        GRAFANA_DASHBOARD_FILE_PATH: ${{ inputs.grafana-dashboard-file-path
+        CHARMCRAFT_ENABLED: ${{ inputs['charmcraft-enabled'] }}
+        SNAPCRAFT_ENABLED: ${{ inputs['snapcraft-enabled'] }}
+        ROCKCRAFT_ENABLED: ${{ inputs['rockcraft-enabled'] }}
+        GRAFANA_ENABLED: ${{ inputs['grafana-enabled'] }}
+        GRAFANA_DASHBOARD_FILE_PATH: ${{ inputs['grafana-dashboard-file-path'] }}

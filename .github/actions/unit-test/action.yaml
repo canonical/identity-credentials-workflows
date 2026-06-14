@@ -23,8 +23,8 @@ runs:
   steps:
     - name: Run unit tests
       shell: bash
-      run: just working-directory=${{ inputs.working-directory }} test-unit
+      run: just working-directory=${{ inputs['working-directory'] }} test-unit
       env:
-        GO_ENABLED: ${{ inputs.go_enabled }}
-        PYTHON_ENABLED: ${{ inputs.python_enabled }}
-        TYPESCRIPT_ENABLED: ${{ inputs.typescript_enabled }}
+        GO_ENABLED: ${{ inputs['go_enabled'] }}
+        PYTHON_ENABLED: ${{ inputs['python_enabled'] }}
+        TYPESCRIPT_ENABLED: ${{ inputs['typescript_enabled'] }}

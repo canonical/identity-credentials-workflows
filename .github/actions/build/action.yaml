@@ -36,11 +36,11 @@ runs:
   steps:
     - name: Run builds
       shell: bash
-      run: just working-directory=${{ inputs.working-directory }} build
+      run: just working-directory=${{ inputs['working-directory'] }} build
       env:
-        BUILD_GO: ${{ inputs.BUILD_GO }}
-        BUILD_PYTHON: ${{ inputs.BUILD_PYTHON }}
-        BUILD_TYPESCRIPT: ${{ inputs.BUILD_TYPESCRIPT }}
-        BUILD_CHARM: ${{ inputs.BUILD_CHARM }}
-        BUILD_SNAP: ${{ inputs.BUILD_SNAP }}
-        BUILD_ROCK: ${{ inputs.BUILD_ROCK }}
+        BUILD_GO: ${{ inputs['BUILD_GO'] }}
+        BUILD_PYTHON: ${{ inputs['BUILD_PYTHON'] }}
+        BUILD_TYPESCRIPT: ${{ inputs['BUILD_TYPESCRIPT'] }}
+        BUILD_CHARM: ${{ inputs['BUILD_CHARM'] }}
+        BUILD_SNAP: ${{ inputs['BUILD_SNAP'] }}
+        BUILD_ROCK: ${{ inputs['BUILD_ROCK'] }}
