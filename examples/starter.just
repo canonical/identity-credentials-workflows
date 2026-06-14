@@ -1,5 +1,5 @@
 # This file imports the justfile from the identity-credentials-workflows repository, which contains the necessary tasks.
-import? "https://raw.githubusercontent.com/canonical/identity-credentials-workflows/refs/tags/v2.0.1/justfile"
+import? "https://raw.githubusercontent.com/canonical/identity-credentials-workflows/refs/tags/v3.0.0/justfile"
 
 # You can make any task you would like to use
 fun:
