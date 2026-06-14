@@ -27,15 +27,6 @@ on:
         required: false
         default: false
         type: boolean
-      auto-merge:
-        description: Auto-merge release PRs
-        required: false
-        default: false
-        type: boolean
-    secrets:
-      PAT_TOKEN:
-        description: Personal access token for auto-merge (must have contents:write and pull-requests:write)
-        required: false
 
 permissions:
   contents: write
