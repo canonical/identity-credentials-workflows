@@ -1,5 +1,5 @@
-name: code-health
-description: Run shared code quality checks through just.
+name: build
+description: Run shared build scripts through just.
 inputs:
   working-directory:
     description: the directory to run builds in
