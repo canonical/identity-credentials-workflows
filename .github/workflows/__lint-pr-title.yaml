@@ -13,4 +13,4 @@ permissions:
 
 jobs:
   lint-pr-title:
-    uses: .github/workflows/lint-pr.yaml@main
+    uses: ./.github/workflows/lint-pr.yaml
