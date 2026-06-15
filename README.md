@@ -61,10 +61,18 @@ all build artifacts should be stored with the name {{project_name}}-{{arch}}-{{t
 
 The integration test script is designed to run the integration tests for the project. It usually requires the built artifact to run as well as the use of a CLI tool. Any test that requires the built artifact should inherently be considered an integration test.
 
-### Release
+### Publish
 
-Unlike the other actions, the release script should only run in the main repository. It should be the only running workflow in release branches. It expects the appropriate secrets to be available in the repository to be able to release the project.
+Unlike the other actions, the publish script should not run in the PR, but after a merge to a main branch. It expects the appropriate secrets to be available in the repository to be able to release the project.
 
 ### Working with the justfile
 
 You can override the exact steps you need to override in the justfile, and call the original steps via the module prefix. There is an example justfile in the `examples/` folder.
+
+## Releases
+
+We use release_please to do releases for all of our projects including this one. A basic configuration is defined in `release-please-config.json`.
+
+## Renovate
+
+Renovate is used to keep our dependencies up to date. Renovate is configured in `renovate.json` and a shared configuration is defined in `identity-credentials-workflows` repo.

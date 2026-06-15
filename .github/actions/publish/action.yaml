@@ -19,19 +19,19 @@ inputs:
     description: Enable rock publishing.
     required: false
     default: "false"
-  rock-registry:
-    description: Container registry for rocks.
-    required: false
-    default: ghcr.io
   rock-architectures:
-    description: JSON array of rock architectures.
+    description: space separated list of rock architectures.
     required: false
-    default: '["amd64"]'
+    default: "amd64"
 
   charm-publish-enabled:
     description: Enable charm publishing.
     required: false
     default: "false"
+  charm-architectures:
+    description: space separated list of charm architectures.
+    required: false
+    default: "amd64"
   charm-channel:
     description: Charmhub channel.
     required: false
@@ -46,14 +46,11 @@ runs:
         just working-directory=${{ inputs['working-directory'] }} publish
       env:
         PUBLISH_SNAP: ${{ inputs['snap-publish-enabled'] }}
-        SNAP_BRANCH_NAME: ${{ inputs['snap-branch-name'] }}
         SNAP_TRACK: ${{ inputs['snap-track'] }}
 
         PUBLISH_ROCK: ${{ inputs['rock-publish-enabled'] }}
-        ROCK_FILE: ${{ inputs['rock-file'] }}
-        ROCK_REGISTRY: ${{ inputs['rock-registry'] }}
         ROCK_ARCHITECTURES: ${{ inputs['rock-architectures'] }}
 
         PUBLISH_CHARM: ${{ inputs['charm-publish-enabled'] }}
-        CHARM_FILE: ${{ inputs['charm-file'] }}
+        CHARM_ARCHITECTURES: ${{ inputs['charm-architectures'] }}
         CHARM_CHANNEL: ${{ inputs['charm-channel'] }}

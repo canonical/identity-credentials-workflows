@@ -33,7 +33,7 @@ setup:
             rockcraft) {{ j }} setup-rockcraft ;;
             juju-k8s) {{ j }} setup-juju-k8s ;;
             juju-machine) {{ j }} setup-juju-machine ;;
-            *) echo "unknown toolchain: $toolchain";;
+            *) echo "unknown toolchain: $toolchain" >&2; exit 1;;
         esac
     done
 
@@ -73,7 +73,11 @@ setup-python:
     set -euo pipefail
     sudo snap install astral-uv --classic
 
-    uv python install
+    if [ -n "${PYTHON_VERSION:-}" ]; then
+        uv python install "$PYTHON_VERSION"
+    else
+        uv python install
+    fi
 
 [private]
 setup-charmcraft:
@@ -247,9 +251,9 @@ secscan-identify-kevs:
     set -euo pipefail
     @echo "identifying known exploited vulnerabilities (KEVs)"
 
-    ./scripts/identify-kevs.sh "$GITHUB_REPOSITORY" > cves.txt 2>/dev/null
-    ./scripts/create-sarif.sh < cves.txt > cves.sarif 2>/dev/null
-    ./scripts/upload-sarif.sh cves.sarif "$GITHUB_REPOSITORY" 2>/dev/null
+    {{ justfile_directory() }}/scripts/identify-kevs.sh "$GITHUB_REPOSITORY" > cves.txt 2>/dev/null
+    {{ justfile_directory() }}/scripts/create-sarif.sh < cves.txt > cves.sarif 2>/dev/null
+    {{ justfile_directory() }}/scripts/upload-sarif.sh cves.sarif "$GITHUB_REPOSITORY" 2>/dev/null
 
 [private]
 secscan-go: setup-go
@@ -470,8 +474,6 @@ publish-snap:
 publish-rock:
     #!/usr/bin/env bash
     set -euo pipefail
-
-    registry="${REGISTRY:-ghcr.io}"
 
     image_name=$(yq -r '.name' rockcraft.yaml)
     version=$(yq -r '.version' rockcraft.yaml)

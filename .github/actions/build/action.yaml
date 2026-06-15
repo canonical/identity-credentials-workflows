@@ -19,15 +19,15 @@ inputs:
     required: false
     default: "false"
   charmcraft-enabled:
-    description: whether to build the charm
+    description: whether to build a charm
     required: false
     default: "false"
   snapcraft-enabled:
-    description: the type of charm to build
+    description: whether to build a snap
     required: false
     default: "false"
   rockcraft-enabled:
-    description: whether to build a rock package
+    description: whether to build a rock
     required: false
     default: "false"
 
