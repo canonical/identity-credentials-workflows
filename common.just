@@ -202,9 +202,9 @@ test-unit:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "$GO_ENABLED" = "true" ] && {{ j }} test-unit-go
-    [ "$PYTHON_ENABLED" = "true" ] && {{ j }} test-unit-python
-    [ "$TYPESCRIPT_ENABLED" = "true" ] && {{ j }} test-unit-typescript
+    [ "${GO_ENABLED:-false}" = "true" ] && {{ j }} test-unit-go
+    [ "${PYTHON_ENABLED:-false}" = "true" ] && {{ j }} test-unit-python
+    [ "${TYPESCRIPT_ENABLED:-false}" = "true" ] && {{ j }} test-unit-typescript
 
 [private]
 test-unit-go: setup-go
@@ -237,8 +237,8 @@ secscan:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "$GO_SCAN_ENABLED" = "true" ] && {{ j }} secscan-go
-    [ "$KEV_SCAN_ENABLED" = "true" ] && {{ j }} secscan-identify-kevs
+    [ "${GO_SCAN_ENABLED:-false}" = "true" ] && {{ j }} secscan-go
+    [ "${KEV_SCAN_ENABLED:-false}" = "true" ] && {{ j }} secscan-identify-kevs
 
 [private]
 secscan-identify-kevs:
@@ -292,12 +292,12 @@ build:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "$GO_ENABLED" = "true" ] && {{ j }} build-go
-    [ "$PYTHON_ENABLED" = "true" ] && {{ j }} build-python
-    [ "$TYPESCRIPT_ENABLED" = "true" ] && {{ j }} build-typescript
-    [ "$CHARMCRAFT_ENABLED" = "true" ] && {{ j }} build-charm
-    [ "$SNAPCRAFT_ENABLED" = "true" ] && {{ j }} build-snap
-    [ "$ROCKCRAFT_ENABLED" = "true" ] && {{ j }} build-rock
+    [ "${GO_ENABLED:-false}" = "true" ] && {{ j }} build-go
+    [ "${PYTHON_ENABLED:-false}" = "true" ] && {{ j }} build-python
+    [ "${TYPESCRIPT_ENABLED:-false}" = "true" ] && {{ j }} build-typescript
+    [ "${CHARMCRAFT_ENABLED:-false}" = "true" ] && {{ j }} build-charm
+    [ "${SNAPCRAFT_ENABLED:-false}" = "true" ] && {{ j }} build-snap
+    [ "${ROCKCRAFT_ENABLED:-false}" = "true" ] && {{ j }} build-rock
 
 [private]
 build-python:
@@ -351,9 +351,9 @@ test-integration:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "$CHARM_ENABLED" = "true" ] && {{ j }} test-integration-charm
-    [ "$SNAP_ENABLED" = "true" ] && {{ j }} test-integration-snap
-    [ "$ROCK_ENABLED" = "true" ] && {{ j }} test-integration-rock
+    [ "${CHARM_ENABLED:-false}" = "true" ] && {{ j }} test-integration-charm
+    [ "${SNAP_ENABLED:-false}" = "true" ] && {{ j }} test-integration-snap
+    [ "${ROCK_ENABLED:-false}" = "true" ] && {{ j }} test-integration-rock
 
 [private]
 test-integration-charm:
