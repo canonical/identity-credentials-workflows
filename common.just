@@ -22,7 +22,7 @@ setup:
     @set -euo pipefail
     @echo "installing dependencies..."
 
-    toolchains=($TOOLCHAINS)
+    toolchains=(${TOOLCHAINS:-})
     for toolchain in "${toolchains[@]}"; do
         case "$toolchain" in
             go) {{ j }} setup-go ;;
@@ -265,9 +265,9 @@ secscan-identify-kevs:
     set -euo pipefail
     @echo "identifying known exploited vulnerabilities (KEVs)"
 
-    {{ justfile_directory() }}/scripts/identify-kevs.sh "$GITHUB_REPOSITORY" > cves.txt 2>/dev/null
-    {{ justfile_directory() }}/scripts/create-sarif.sh < cves.txt > cves.sarif 2>/dev/null
-    {{ justfile_directory() }}/scripts/upload-sarif.sh cves.sarif "$GITHUB_REPOSITORY" 2>/dev/null
+    {{ justfile_directory() }}/scripts/identify-kevs.sh "$GITHUB_REPOSITORY" > cves.txt
+    {{ justfile_directory() }}/scripts/create-sarif.sh < cves.txt > cves.sarif
+    {{ justfile_directory() }}/scripts/upload-sarif.sh cves.sarif "$GITHUB_REPOSITORY"
 
 [private]
 secscan-go: setup-go

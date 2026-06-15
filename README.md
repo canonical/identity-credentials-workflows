@@ -37,7 +37,7 @@ The actions for continuous integration are designed to adapt to any of our proje
 
 We use a common.just file from [just.systems](https://just.systems/) to keep all of our actions consistent in our repos. The actions will call predetermined just recipes for all repos. Overrides can be used to customize the actions for a specific repo.
 
-There are 6 just recipes that our github actions call. They are:
+ There are 6 main just recipes that our GitHub Actions call for CI tasks (plus `setup` for installing toolchains). They are:
 
 ### Code Health
 
@@ -75,4 +75,4 @@ We use release_please to do releases for all of our projects including this one.
 
 ## Renovate
 
-Renovate is used to keep our dependencies up to date. Renovate is configured in `renovate.json` and a shared configuration is defined in `identity-credentials-workflows` repo.
+Renovate is used to keep our dependencies up to date. Renovate is configured in `renovate.json5` and a shared configuration is defined in `identity-credentials-workflows` repo.
