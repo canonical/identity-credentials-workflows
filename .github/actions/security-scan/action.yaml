@@ -1,5 +1,5 @@
 name: security-scan
-description: Run shared security scans through just.
+description: "Run shared security scans through just (requires security-events: read and security-events: write permissions)."
 inputs:
   working-directory:
     description: the directory to run security scans in

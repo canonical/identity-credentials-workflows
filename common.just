@@ -2,6 +2,7 @@ working-directory := "."
 set working-directory := working-directory
 
 j := "just working-directory=" + quote(working-directory)
+export PATH := env_var("PATH") + ":" + env_var("HOME") + "/go/bin"
 
 set allow-duplicate-recipes
 set allow-duplicate-variables
@@ -281,7 +282,7 @@ secscan-go: setup-go
     set -euo pipefail
 
     # Gosec Scan
-    go install github.com/securego/gosec/v2/cmd/gosec@v2.27.1
+    go install github.com/securego/gosec/v2/cmd/gosec@2.27.1
     gosec ./...
 
     gosec -fmt sarif -out results.sarif ./...
@@ -498,7 +499,6 @@ publish-rock:
     version=$(yq -r '.version' rockcraft.yaml)
     prefix="ghcr.io/canonical/${image_name}"
 
-    # Parse the JSON array of architectures, e.g. '["amd64", "arm64"]'.
     read -r -a ARCH_LIST <<< "${ROCK_ARCHITECTURES:-amd64}"
 
     for arch in "${ARCH_LIST[@]}"; do
