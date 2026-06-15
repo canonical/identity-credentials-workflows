@@ -53,7 +53,13 @@ setup-go:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install go --classic --channel=${GO_VERSION:-latest}/stable
+    go_version="${GO_VERSION:-}"
+    if [ -z "$go_version" ] && [ -f "go.mod" ]; then
+        go_version=$(grep -m1 '^go[[:space:]]' go.mod | awk '{print $2}' | cut -d. -f1,2)
+        echo "Detected Go version from go.mod: $go_version"
+    fi
+
+    sudo snap install go --classic --channel="${go_version:-latest}/stable"
     go version
 
 [private]
@@ -73,8 +79,16 @@ setup-python:
     set -euo pipefail
     sudo snap install astral-uv --classic
 
-    if [ -n "${PYTHON_VERSION:-}" ]; then
-        uv python install "$PYTHON_VERSION"
+    python_version="${PYTHON_VERSION:-}"
+    if [ -z "$python_version" ] && [ -f "pyproject.toml" ]; then
+        python_version=$(grep 'requires-python' pyproject.toml | grep -oE '[0-9]+\.[0-9]+' | head -1)
+        if [ -n "$python_version" ]; then
+            echo "Detected Python version from pyproject.toml: $python_version"
+        fi
+    fi
+
+    if [ -n "$python_version" ]; then
+        uv python install "$python_version"
     else
         uv python install
     fi
