@@ -10,7 +10,7 @@ on:
       target-branch:
         description: Target branch for release
         required: false
-        default: ${{ github.ref_name }}
+        default: main
         type: string
       config-file:
         description: Path to release-please-config.json

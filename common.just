@@ -281,7 +281,7 @@ secscan-go: setup-go
     set -euo pipefail
 
     # Gosec Scan
-    go install github.com/securego/gosec/v2/cmd/gosec@2.27.1
+    go install github.com/securego/gosec/v2/cmd/gosec@v2.27.1
     gosec ./...
 
     gosec -fmt sarif -out results.sarif ./...
@@ -446,7 +446,6 @@ publish:
     [ "${PUBLISH_SNAP:-false}" = "true" ] && {{ j }} publish-snap
     [ "${PUBLISH_ROCK:-false}" = "true" ] && {{ j }} publish-rock
     [ "${PUBLISH_PYTHON:-false}" = "true" ] && {{ j }} publish-python
-    [ "${PUBLISH_BIN:-false}" = "true" ] && {{ j }} publish-bin
 
 # publish a charm to CharmHub
 [private]
@@ -500,7 +499,7 @@ publish-rock:
     prefix="ghcr.io/canonical/${image_name}"
 
     # Parse the JSON array of architectures, e.g. '["amd64", "arm64"]'.
-    mapfile -t ARCH_LIST < <(echo "${ARCHITECTURES:-[\"amd64\"]}" | jq -r '.[]')
+    read -r -a ARCH_LIST <<< "${ROCK_ARCHITECTURES:-amd64}"
 
     for arch in "${ARCH_LIST[@]}"; do
         rock_file=$(ls *_"${arch}".rock 2>/dev/null | head -n 1)

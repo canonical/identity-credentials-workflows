@@ -1,6 +1,10 @@
 name: setup-toolchains
 description: install the requested toolchains
 inputs:
+  working-directory:
+    description: Project directory to run setup in (used for auto-detecting versions from go.mod/pyproject.toml).
+    required: false
+    default: .
   toolchains:
     description: "Toolchains to install in space-separated format. Supported toolchains are: go, python, typescript, rockcraft, snapcraft, charmcraft, juju-k8s, juju-machine."
     required: true
@@ -65,4 +69,4 @@ runs:
         EXTRA_SNAPS: ${{ inputs['extra-snaps'] }}
         EXTRA_DEBS: ${{ inputs['extra-debs'] }}
       run: |
-        just setup
+        just "working-directory=${{ inputs['working-directory'] }}" setup

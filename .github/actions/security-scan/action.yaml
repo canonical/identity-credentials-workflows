@@ -7,7 +7,7 @@ inputs:
     default: .
 
   kev-scan-enabled:
-    description: Enable scanning for KEV's in the repository
+    description: Enable scanning for KEVs in the repository
     required: false
     default: "false"
   go-scan-enabled:
@@ -19,7 +19,7 @@ runs:
   steps:
     - name: run security scan
       shell: bash
-      run: just working-directory=${{ inputs['working-directory'] }} security-scan
+      run: just "working-directory=${{ inputs['working-directory'] }}" security-scan
       env:
         GITHUB_TOKEN: ${{ github.token }}
         KEV_SCAN_ENABLED: ${{ inputs['kev-scan-enabled'] }}

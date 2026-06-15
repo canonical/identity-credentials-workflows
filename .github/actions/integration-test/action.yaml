@@ -49,7 +49,7 @@ runs:
   steps:
     - name: Run integration tests
       shell: bash
-      run: just working-directory=${{ inputs['working-directory'] }} test-integration
+      run: just "working-directory=${{ inputs['working-directory'] }}" test-integration
       env:
         CHARM_ENABLED: ${{ inputs['charm-enabled'] }}
         CHARM_FILE_NAME: ${{ inputs['charm-file-name'] }}

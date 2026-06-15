@@ -36,7 +36,7 @@ runs:
   steps:
     - name: Run builds
       shell: bash
-      run: just working-directory=${{ inputs['working-directory'] }} build
+      run: just "working-directory=${{ inputs['working-directory'] }}" build
       env:
         GO_ENABLED: ${{ inputs['go-enabled'] }}
         PYTHON_ENABLED: ${{ inputs['python-enabled'] }}

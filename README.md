@@ -37,7 +37,7 @@ The actions for continuous integration are designed to adapt to any of our proje
 
 We use a common.just file from [just.systems](https://just.systems/) to keep all of our actions consistent in our repos. The actions will call predetermined just recipes for all repos. Overrides can be used to customize the actions for a specific repo.
 
- There are 6 main just recipes that our GitHub Actions call for CI tasks (plus `setup` for installing toolchains). They are:
+There are 6 main just recipes that our GitHub Actions call for CI tasks (plus `setup` for installing toolchains). They are:
 
 ### Code Health
 
@@ -51,11 +51,11 @@ The unit test script is designed to run the unit tests for the project. They sho
 
 The security scan script is designed to run security scanning on the code. Unlike code health tools, security scanning tools target specific vulnerabilities or problems in the repo that may or may not be independent from the code itself.
 
-### Build 
+### Build
 
 The build script is designed to build the project. This is the build that will be staged for release.
 
-all build artifacts should be stored with the name {{project_name}}-{{arch}}-{{type}}.{{filetype}}. The moving and renaming of the final artifacts for integration testing and release is left up to the workflow implementing the action.
+All build artifacts should be stored with the name `{{project_name}}-{{arch}}-{{type}}.{{filetype}}`. The moving and renaming of the final artifacts for integration testing and release is left up to the workflow implementing the action.
 
 ### Integration Test
 
@@ -71,7 +71,7 @@ You can override the exact steps you need to override in the justfile, and call 
 
 ## Releases
 
-We use release_please to do releases for all of our projects including this one. A basic configuration is defined in `release-please-config.json`.
+We use release-please to do releases for all of our projects including this one. A basic configuration is defined in `release-please-config.json`.
 
 ## Renovate
 

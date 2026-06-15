@@ -23,7 +23,7 @@ runs:
   steps:
     - name: Run unit tests
       shell: bash
-      run: just working-directory=${{ inputs['working-directory'] }} test-unit
+      run: just "working-directory=${{ inputs['working-directory'] }}" test-unit
       env:
         GO_ENABLED: ${{ inputs['go-enabled'] }}
         PYTHON_ENABLED: ${{ inputs['python-enabled'] }}

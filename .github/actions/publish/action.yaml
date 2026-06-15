@@ -43,7 +43,7 @@ runs:
     - name: Release artifact
       shell: bash
       run: |
-        just working-directory=${{ inputs['working-directory'] }} publish
+        just "working-directory=${{ inputs['working-directory'] }}" publish
       env:
         PUBLISH_SNAP: ${{ inputs['snap-publish-enabled'] }}
         SNAP_TRACK: ${{ inputs['snap-track'] }}

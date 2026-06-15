@@ -44,7 +44,7 @@ runs:
   steps:
     - name: Run code quality checks
       shell: bash
-      run: just working-directory=${{ inputs['working-directory'] }} code-health
+      run: just "working-directory=${{ inputs['working-directory'] }}" code-health
       env:
         GO_ENABLED: ${{ inputs['go-enabled'] }}
         PYTHON_ENABLED: ${{ inputs['python-enabled'] }}

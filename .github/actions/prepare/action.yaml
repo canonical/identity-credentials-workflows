@@ -11,9 +11,9 @@ runs:
         just-version: 1.51.0
 
     - name: check out current repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
     - name: check out justfiles from identity-credentials-workflows
-      uses: actions/checkout@v6
+      uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       with:
         repository: "canonical/identity-credentials-workflows"
         ref: ${{ github.action_ref }}
