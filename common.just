@@ -123,7 +123,10 @@ setup-juju-k8s:
     set -euo pipefail
 
     sudo snap install concierge --classic --channel=latest/stable
-    sudo concierge prepare -p k8s
+    args=("-p" "k8s")
+    [ -n "${JUJU_CHANNEL:-}" ] && args+=(--juju-channel "${JUJU_CHANNEL}")
+    [ -n "${K8S_CHANNEL:-}" ] && args+=(--k8s-channel "${K8S_CHANNEL}")
+    sudo concierge prepare "${args[@]}"
 
 [private]
 setup-juju-machine:
@@ -131,7 +134,10 @@ setup-juju-machine:
     set -euo pipefail
 
     sudo snap install concierge --classic --channel=latest/stable
-    sudo concierge prepare -p machine
+    args=("-p" "machine")
+    [ -n "${JUJU_CHANNEL:-}" ] && args+=(--juju-channel "${JUJU_CHANNEL}")
+    [ -n "${LXD_CHANNEL:-}" ] && args+=(--lxd-channel "${LXD_CHANNEL}")
+    sudo concierge prepare "${args[@]}"
 
 # =============================================================================
 # Code Health
