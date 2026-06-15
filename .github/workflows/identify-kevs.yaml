@@ -21,14 +21,12 @@ jobs:
       # NOTE: stderr is redirected to /dev/null to avoid leaking information to
       # public workflow output but the scripts can still be used locally to debug
       - name: Identify CVEs in KEV Database
-        run: ./identity-credentials-workflows/kev-identification/identify-kevs.sh ${{ github.repository }} > cves.txt 2>/dev/null
+        run: ./identity-credentials-workflows/scripts/identify-kevs.sh ${{ github.repository }} > cves.txt 2>/dev/null
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Create SARIF
-        run: ./identity-credentials-workflows/kev-identification/create-sarif.sh <cves.txt >cves.sarif 2>/dev/null
+        run: ./identity-credentials-workflows/scripts/create-sarif.sh <cves.txt >cves.sarif 2>/dev/null
       - name: Upload SARIF
-        run: ./identity-credentials-workflows/kev-identification/upload-sarif.sh cves.sarif ${{ github.repository }} 2>/dev/null
+        run: ./identity-credentials-workflows/scripts/upload-sarif.sh cves.sarif ${{ github.repository }} 2>/dev/null
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-

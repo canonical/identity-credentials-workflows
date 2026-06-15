@@ -193,7 +193,7 @@ lint-grafana: setup-go
     @echo "linting Grafana dashboards..."
 
     go install github.com/grafana/dashboard-linter@v0.1.1
-    dashboard-linter lint $GRAFANA_DASHBOARD_FILE_PATH --strict -c grafana.lint
+    dashboard-linter lint "$GRAFANA_DASHBOARD_FILE_PATH" --strict -c grafana.lint
 
 [private]
 lint-charmcraft: setup-charmcraft
@@ -282,7 +282,7 @@ secscan-go: setup-go
     set -euo pipefail
 
     # Gosec Scan
-    go install github.com/securego/gosec/v2/cmd/gosec@2.27.1
+    go install github.com/securego/gosec/v2/cmd/gosec@v2.27.1
     gosec ./...
 
     gosec -fmt sarif -out results.sarif ./...
