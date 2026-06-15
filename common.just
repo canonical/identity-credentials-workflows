@@ -53,7 +53,7 @@ setup-go:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install go --classic --channel=$GO_VERSION/stable
+    sudo snap install go --classic --channel=${GO_VERSION:-latest}/stable
     go version
 
 [private]
@@ -79,7 +79,7 @@ setup-charmcraft:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install charmcraft --classic --channel=$CHARMCRAFT_CHANNEL
+    sudo snap install charmcraft --classic --channel=${CHARMCRAFT_CHANNEL:-latest}/stable
     charmcraft version
 
 [private]
@@ -87,7 +87,7 @@ setup-snapcraft:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install snapcraft --classic --channel=$SNAPCRAFT_CHANNEL
+    sudo snap install snapcraft --classic --channel=${SNAPCRAFT_CHANNEL:-latest}/stable
     snapcraft version
 
 [private]
@@ -95,7 +95,7 @@ setup-rockcraft:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install rockcraft --classic --channel=$ROCKCRAFT_CHANNEL
+    sudo snap install rockcraft --classic --channel=${ROCKCRAFT_CHANNEL:-latest}/stable
     rockcraft version
 
 [private]
@@ -123,13 +123,13 @@ code-health:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "$GO_ENABLED" = "true" ] && {{ j }} code-health-go
-    [ "$PYTHON_ENABLED" = "true" ] && {{ j }} code-health-python
-    [ "$TYPESCRIPT_ENABLED" = "true" ] && {{ j }} code-health-typescript
-    [ "$CHARMCRAFT_ENABLED" = "true" ] && {{ j }} lint-charmcraft
-    [ "$SNAPCRAFT_ENABLED" = "true" ] && {{ j }} lint-snapcraft
-    [ "$ROCKCRAFT_ENABLED" = "true" ] && {{ j }} lint-rockcraft
-    [ "$GRAFANA_ENABLED" = "true" ] && {{ j }} lint-grafana
+    [ "${GO_ENABLED:-false}" = "true" ] && {{ j }} code-health-go
+    [ "${PYTHON_ENABLED:-false}" = "true" ] && {{ j }} code-health-python
+    [ "${TYPESCRIPT_ENABLED:-false}" = "true" ] && {{ j }} code-health-typescript
+    [ "${CHARMCRAFT_ENABLED:-false}" = "true" ] && {{ j }} lint-charmcraft
+    [ "${SNAPCRAFT_ENABLED:-false}" = "true" ] && {{ j }} lint-snapcraft
+    [ "${ROCKCRAFT_ENABLED:-false}" = "true" ] && {{ j }} lint-rockcraft
+    [ "${GRAFANA_ENABLED:-false}" = "true" ] && {{ j }} lint-grafana
 
 [private]
 code-health-go: setup-go
@@ -429,50 +429,23 @@ publish-charm:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    # Determine the destination channel, optionally suffixed with a sanitized
-    # branch name (e.g. latest/edge/my-feature-branch).
-    channel="${DESTINATION_CHANNEL:-latest/edge}"
-    if [ -n "${BRANCH_NAME:-}" ]; then
-        sanitized=$(echo "$BRANCH_NAME" | sed 's#[/_.]#-#g')
-        channel="$channel/$sanitized"
-    fi
-    echo "Publishing charm(s) to channel: $channel"
+    channel="${CHARM_CHANNEL:-latest}"
+    channel="$channel/edge"
+    echo "publishing charm(s) to channel: $channel"
 
-    # Resolve the list of built charms to upload. CHARM_PATHS is a
-    # comma-separated list produced by the build step; fall back to globbing.
-    if [ -n "${CHARM_PATHS:-}" ]; then
-        IFS=',' read -ra charms <<< "$CHARM_PATHS"
-    else
-        mapfile -t charms < <(ls ./*.charm 2>/dev/null)
-    fi
 
-    if [ "${#charms[@]}" -eq 0 ]; then
-        echo "::error::No charm files found to publish"
+    charm=$(ls *.charm 2>/dev/null | head -n 1)
+    if [ -z "$charm" ]; then
+        echo "::error::No charm file found to publish"
         exit 1
     fi
 
-    # The charm name is required to release an uploaded revision to a channel.
-    charm_name="${CHARM_NAME:-}"
-    if [ -z "$charm_name" ]; then
-        if [ -f charmcraft.yaml ]; then
-            charm_name=$(yq -r '.name' charmcraft.yaml)
-        elif [ -f metadata.yaml ]; then
-            charm_name=$(yq -r '.name' metadata.yaml)
-        fi
-    fi
+    charm_name=$(yq -r '.name' charmcraft.yaml)
 
-    if [ -z "$charm_name" ]; then
-        echo "::error::Unable to determine charm name (set CHARM_NAME)"
-        exit 1
-    fi
-
-    for charm in "${charms[@]}"; do
-        charm=$(echo "$charm" | xargs)  # trim surrounding whitespace
-        echo "Uploading $charm"
-        revision=$(charmcraft upload "$charm" --format json | yq -r '.revision')
-        echo "Releasing $charm_name revision $revision to $channel"
-        charmcraft release "$charm_name" --revision "$revision" --channel "$channel"
-    done
+    @echo "Uploading $charm"
+    revision=$(charmcraft upload "$charm" --format json | yq -r '.revision')
+    @echo "Releasing $charm_name revision $revision to $channel"
+    charmcraft release "$charm_name" --revision "$revision" --channel "$channel"
 
 # publish a snap to the Snap Store
 [private]
@@ -480,24 +453,16 @@ publish-snap:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    # Channel is track/risk, optionally suffixed with a branch (track/risk/branch).
-    release_channel="${TRACK:-latest}/${RISK:-edge}"
-    if [ -n "${SNAP_BRANCH_NAME:-}" ]; then
-        release_channel="$release_channel/$SNAP_BRANCH_NAME"
-    fi
+    release_channel="${SNAP_TRACK:-latest}/edge"
 
-    snap_file="${SNAP_FILE:-}"
-    if [ -z "$snap_file" ]; then
-        snap_file=$(ls ./*.snap 2>/dev/null | head -n 1)
-    fi
-
-    if [ -z "$snap_file" ]; then
+    snap=$(ls *.snap 2>/dev/null | head -n 1)
+    if [ -z "$snap" ]; then
         echo "::error::No snap file found to publish"
         exit 1
     fi
 
-    echo "Publishing $snap_file to $release_channel"
-    snapcraft upload "$snap_file" --release "$release_channel"
+    echo "Publishing $snap to $release_channel"
+    snapcraft upload "$snap" --release "$release_channel"
 
 # publish a rock to a container registry
 [private]
@@ -507,24 +472,9 @@ publish-rock:
 
     registry="${REGISTRY:-ghcr.io}"
 
-    # Image name and version default to the values in rockcraft.yaml but can be
-    # overridden via env (and version may come from a version/VERSION file).
-    image_name="${IMAGE_NAME:-}"
-    if [ -z "$image_name" ]; then
-        image_name=$(yq -r '.name' rockcraft.yaml)
-    fi
-
-    version="${VERSION:-}"
-    if [ -z "$version" ]; then
-        if [ -f version/VERSION ]; then
-            version=$(cat version/VERSION)
-        else
-            version=$(yq -r '.version' rockcraft.yaml)
-        fi
-    fi
-
-    repo="${GITHUB_REPOSITORY:-canonical/${image_name}}"
-    prefix="${registry}/${repo}/${image_name}"
+    image_name=$(yq -r '.name' rockcraft.yaml)
+    version=$(yq -r '.version' rockcraft.yaml)
+    prefix="ghcr.io/canonical/${image_name}"
 
     # Parse the JSON array of architectures, e.g. '["amd64", "arm64"]'.
     mapfile -t ARCH_LIST < <(echo "${ARCHITECTURES:-[\"amd64\"]}" | jq -r '.[]')
@@ -536,7 +486,7 @@ publish-rock:
             exit 1
         fi
 
-        echo "Importing $rock_file as ${prefix}:${version}-${arch}"
+        @echo "importing $rock_file as ${prefix}:${version}-${arch}"
         sudo rockcraft.skopeo --insecure-policy copy \
             oci-archive:"$rock_file" \
             docker-daemon:"${prefix}:${version}-${arch}"
@@ -552,11 +502,9 @@ publish-rock:
     docker manifest create "${prefix}:${version}" "${MANIFEST_ARGS[@]}"
     docker manifest push "${prefix}:${version}"
 
-    if [ "${TAG_LATEST:-true}" = "true" ]; then
-        echo "Creating latest manifest: ${prefix}:latest"
-        docker manifest create "${prefix}:latest" "${MANIFEST_ARGS[@]}"
-        docker manifest push "${prefix}:latest"
-    fi
+    echo "creating latest manifest: ${prefix}:latest"
+    docker manifest create "${prefix}:latest" "${MANIFEST_ARGS[@]}"
+    docker manifest push "${prefix}:latest"
 
 # publish a package to PyPI
 [private]
@@ -565,20 +513,3 @@ publish-python:
     set -euo pipefail
 
     uv publish
-
-# publish a binary by auto-detecting the craft type in the working directory
-[private]
-publish-bin:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    if [ -f charmcraft.yaml ]; then
-        {{ j }} publish-charm
-    elif [ -f snapcraft.yaml ]; then
-        {{ j }} publish-snap
-    elif [ -f rockcraft.yaml ]; then
-        {{ j }} publish-rock
-    else
-        echo "::error::No recognized craft type found in $(pwd)"
-        exit 1
-    fi

@@ -6,22 +6,11 @@ inputs:
     required: false
     default: .
 
-  snap-file:
-    description: Snap artifact to publish.
-    required: false
-    default: ""
-  snap-branch-name:
-    description: Branch suffix to append to the channel.
-    required: false
-    default: ""
   snap-track:
     description: Snap track.
     required: false
     default: latest
-  rock-file:
-    description: Rock artifact to publish.
-    required: false
-    default: ""
+
   rock-registry:
     description: Container registry for rocks.
     required: false
@@ -30,10 +19,7 @@ inputs:
     description: JSON array of rock architectures.
     required: false
     default: '["amd64"]'
-  charm-file:
-    description: Charm artifact to publish.
-    required: false
-    default: ""
+
   charm-channel:
     description: Charmhub channel.
     required: false
