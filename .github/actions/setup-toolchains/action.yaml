@@ -53,6 +53,7 @@ runs:
     - name: Install dependencies
       shell: bash
       env:
+        TOOLCHAINS: ${{ inputs['toolchains'] }}
         PYTHON_VERSION: ${{ inputs['python-version'] }}
         GO_VERSION: ${{ inputs['go-version'] }}
         JUJU_CHANNEL: ${{ inputs['juju-channel'] }}
@@ -64,4 +65,4 @@ runs:
         EXTRA_SNAPS: ${{ inputs['extra-snaps'] }}
         EXTRA_DEBS: ${{ inputs['extra-debs'] }}
       run: |
-        just install-dependencies
+        just setup

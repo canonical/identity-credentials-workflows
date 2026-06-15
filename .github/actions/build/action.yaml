@@ -6,27 +6,27 @@ inputs:
     required: false
     default: .
 
-  build-python:
-    description: whether to build a python package
-    required: false
-    default: "false"
-  build-go:
+  go-enabled:
     description: whether to build a go package
     required: false
     default: "false"
-  build-typescript:
+  python-enabled:
+    description: whether to build a python package
+    required: false
+    default: "false"
+  typescript-enabled:
     description: whether to build a typescript package
     required: false
     default: "false"
-  build-charm:
+  charmcraft-enabled:
     description: whether to build the charm
     required: false
     default: "false"
-  build-snap:
+  snapcraft-enabled:
     description: the type of charm to build
     required: false
     default: "false"
-  build-rock:
+  rockcraft-enabled:
     description: whether to build a rock package
     required: false
     default: "false"
@@ -38,9 +38,9 @@ runs:
       shell: bash
       run: just working-directory=${{ inputs['working-directory'] }} build
       env:
-        BUILD_GO: ${{ inputs['build-go'] }}
-        BUILD_PYTHON: ${{ inputs['build-python'] }}
-        BUILD_TYPESCRIPT: ${{ inputs['build-typescript'] }}
-        BUILD_CHARM: ${{ inputs['build-charm'] }}
-        BUILD_SNAP: ${{ inputs['build-snap'] }}
-        BUILD_ROCK: ${{ inputs['build-rock'] }}
+        GO_ENABLED: ${{ inputs['go-enabled'] }}
+        PYTHON_ENABLED: ${{ inputs['python-enabled'] }}
+        TYPESCRIPT_ENABLED: ${{ inputs['typescript-enabled'] }}
+        CHARMCRAFT_ENABLED: ${{ inputs['charmcraft-enabled'] }}
+        SNAPCRAFT_ENABLED: ${{ inputs['snapcraft-enabled'] }}
+        ROCKCRAFT_ENABLED: ${{ inputs['rockcraft-enabled'] }}

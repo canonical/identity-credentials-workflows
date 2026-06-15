@@ -6,11 +6,19 @@ inputs:
     required: false
     default: .
 
+  snap-publish-enabled:
+    description: Enable snap publishing.
+    required: false
+    default: "false"
   snap-track:
     description: Snap track.
     required: false
     default: latest
 
+  rock-publish-enabled:
+    description: Enable rock publishing.
+    required: false
+    default: "false"
   rock-registry:
     description: Container registry for rocks.
     required: false
@@ -20,6 +28,10 @@ inputs:
     required: false
     default: '["amd64"]'
 
+  charm-publish-enabled:
+    description: Enable charm publishing.
+    required: false
+    default: "false"
   charm-channel:
     description: Charmhub channel.
     required: false
@@ -33,11 +45,15 @@ runs:
       run: |
         just working-directory=${{ inputs['working-directory'] }} publish
       env:
-        SNAP_FILE: ${{ inputs['snap-file'] }}
+        PUBLISH_SNAP: ${{ inputs['snap-publish-enabled'] }}
         SNAP_BRANCH_NAME: ${{ inputs['snap-branch-name'] }}
         SNAP_TRACK: ${{ inputs['snap-track'] }}
+
+        PUBLISH_ROCK: ${{ inputs['rock-publish-enabled'] }}
         ROCK_FILE: ${{ inputs['rock-file'] }}
         ROCK_REGISTRY: ${{ inputs['rock-registry'] }}
         ROCK_ARCHITECTURES: ${{ inputs['rock-architectures'] }}
+
+        PUBLISH_CHARM: ${{ inputs['charm-publish-enabled'] }}
         CHARM_FILE: ${{ inputs['charm-file'] }}
         CHARM_CHANNEL: ${{ inputs['charm-channel'] }}

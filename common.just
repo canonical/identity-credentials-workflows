@@ -38,12 +38,12 @@ setup:
     done
 
     sudo snap install yq
-    extra_snaps=($EXTRA_SNAPS)
+    extra_snaps=(${EXTRA_SNAPS:-})
     for snap in "${extra_snaps[@]}"; do
         sudo snap install "$snap" || true
     done
 
-    if [ -z "${EXTRA_DEBS:-}" ]; then
+    if [ -n "${EXTRA_DEBS:-}" ]; then
         sudo apt-get update
         sudo apt-get install -y $EXTRA_DEBS
     fi
@@ -60,7 +60,8 @@ setup-go:
 setup-typescript:
     #!/usr/bin/env bash
     set -euo pipefail
-    sudo apt install unzip
+    sudo apt update
+    sudo apt install -y unzip
 
     curl -fsSL https://bun.com/install | bash
     bun --version
@@ -233,7 +234,7 @@ test-unit-python:
 # =============================================================================
 
 # run security scanning tools and generate reports
-secscan:
+security-scan:
     #!/usr/bin/env bash
     set -euo pipefail
 

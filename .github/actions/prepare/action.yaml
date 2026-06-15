@@ -2,13 +2,6 @@ name: prepare-runner
 description: prepare the runner by fetching the repo and configuring the justfiles
 author: Kayra
 
-inputs:
-  toolchains:
-    description: |
-      "The toolchains to be used for the project. They must be specified as a comma-separated list.
-      The options are go, typescript, python, rockcraft, snapcraft, charmcraft, juju-k8s and juju-machine."
-    required: true
-    default: "go,python,typescript,rockcraft,snapcraft,charmcraft"
 runs:
   using: composite
   steps:
