@@ -99,7 +99,7 @@ setup-charmcraft:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install charmcraft --classic --channel=${CHARMCRAFT_CHANNEL:-latest}/stable
+    sudo snap install charmcraft --classic --channel=${CHARMCRAFT_CHANNEL:-latest/stable}
     charmcraft version
 
 [private]
@@ -107,7 +107,7 @@ setup-snapcraft:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install snapcraft --classic --channel=${SNAPCRAFT_CHANNEL:-latest}/stable
+    sudo snap install snapcraft --classic --channel=${SNAPCRAFT_CHANNEL:-latest/stable}
     snapcraft version
 
 [private]
@@ -115,7 +115,7 @@ setup-rockcraft:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    sudo snap install rockcraft --classic --channel=${ROCKCRAFT_CHANNEL:-latest}/stable
+    sudo snap install rockcraft --classic --channel=${ROCKCRAFT_CHANNEL:-latest/stable}
     rockcraft version
 
 [private]
