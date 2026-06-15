@@ -2,7 +2,7 @@ working-directory := "."
 set working-directory := working-directory
 
 j := "just working-directory=" + quote(working-directory)
-export PATH := env_var("PATH") + ":" + env_var("HOME") + "/go/bin"
+export PATH := env_var("PATH") + ":" + env_var("HOME") + "/go/bin" + ":" + env_var("HOME") + "/.bun/bin"
 
 set allow-duplicate-recipes
 set allow-duplicate-variables
