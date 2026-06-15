@@ -20,8 +20,8 @@ help:
 # install and bootstrap dependencies
 setup:
     #!/usr/bin/env bash
-    @set -euo pipefail
-    @echo "installing dependencies..."
+    set -euo pipefail
+    echo "installing dependencies..."
 
     toolchains=(${TOOLCHAINS:-})
     for toolchain in "${toolchains[@]}"; do
@@ -161,7 +161,7 @@ code-health:
 code-health-go: setup-go
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "linting Golang code..."
+    echo "linting Golang code..."
 
     go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.12.2
     go vet ./...
@@ -171,7 +171,7 @@ code-health-go: setup-go
 code-health-typescript: setup-typescript
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "linting TypeScript code..."
+    echo "linting TypeScript code..."
 
     bun run code-health
 
@@ -179,7 +179,7 @@ code-health-typescript: setup-typescript
 code-health-python: setup-python
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "linting Python code..."
+    echo "linting Python code..."
 
     uv tool install tox --with tox-uv 2>/dev/null || true
     tox -e lint
@@ -190,7 +190,7 @@ code-health-python: setup-python
 lint-grafana: setup-go
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "linting Grafana dashboards..."
+    echo "linting Grafana dashboards..."
 
     go install github.com/grafana/dashboard-linter@v0.1.1
     dashboard-linter lint "$GRAFANA_DASHBOARD_FILE_PATH" --strict -c grafana.lint
@@ -199,7 +199,7 @@ lint-grafana: setup-go
 lint-charmcraft: setup-charmcraft
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "linting charm..."
+    echo "linting charm..."
 
     charmcraft expand-extensions
 
@@ -207,7 +207,7 @@ lint-charmcraft: setup-charmcraft
 lint-snapcraft: setup-snapcraft
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "linting snap..."
+    echo "linting snap..."
 
     snapcraft lint
 
@@ -215,7 +215,7 @@ lint-snapcraft: setup-snapcraft
 lint-rockcraft: setup-rockcraft
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "linting rock..."
+    echo "linting rock..."
 
     rockcraft expand-extensions
 
@@ -270,7 +270,7 @@ security-scan:
 secscan-identify-kevs:
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "identifying known exploited vulnerabilities (KEVs)"
+    echo "identifying known exploited vulnerabilities (KEVs)"
 
     {{ justfile_directory() }}/scripts/identify-kevs.sh "$GITHUB_REPOSITORY" > cves.txt
     {{ justfile_directory() }}/scripts/create-sarif.sh < cves.txt > cves.sarif
@@ -306,7 +306,7 @@ secscan-canonical:
 
     set +e
     secscan-client --batch submit --scanner trivy --type package --format charm charm-under-test.charm --wait-and-print | tee charm-secscan.txt
-    @echo "secscan-return-code=$?"
+    echo "secscan-return-code=$?"
     set -e
 
 # =============================================================================
@@ -352,7 +352,7 @@ build-charm:
     set -euo pipefail
 
     charmcraft fetch-libs
-    charmcraft build --verbose
+    charmcraft pack --verbose
 
 [private]
 build-snap:
@@ -385,16 +385,16 @@ test-integration:
 test-integration-charm:
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "running integration test for $CHARM_FILE_NAME"
+    echo "running integration test for $CHARM_FILE_NAME"
 
     uv tool install tox --with tox-uv
-    tox -e integration --charm_path "$CHARM_FILE_NAME"
+    tox -e integration -- --charm_path "$CHARM_FILE_NAME"
 
 [private]
 test-integration-snap:
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "running integration test for $SNAP_FILE_NAME"
+    echo "running integration test for $SNAP_FILE_NAME"
 
     sudo snap install --dangerous $SNAP_FILE_NAME
     if [ -n "${SNAP_SERVICE_NAME:-}" ]; then
@@ -405,20 +405,20 @@ test-integration-snap:
                 echo "service is listening on port ${SNAP_SERVICE_PORT}"
             else
                 echo "service is NOT listening on port ${SNAP_SERVICE_PORT}"
-                sudo snap remove --purge $SNAP_FILE_NAME
+                sudo snap remove --purge "$SNAP_FILE_NAME"
                 exit 1
             fi
         fi
     fi
 
-    which $SNAP_EXECUTABLE_NAME
-    $SNAP_EXECUTABLE_NAME --help
+    command -v "$SNAP_EXECUTABLE_NAME" >/dev/null
+    "$SNAP_EXECUTABLE_NAME" --help
 
 [private]
 test-integration-rock:
     #!/usr/bin/env bash
     set -euo pipefail
-    @echo "running integration test for $ROCK_FILE_NAME"
+    echo "running integration test for $ROCK_FILE_NAME"
 
     sudo rockcraft.skopeo --insecure-policy copy \
         oci-archive:"$ROCK_FILE_NAME" \
@@ -467,9 +467,9 @@ publish-charm:
 
     charm_name=$(yq -r '.name' charmcraft.yaml)
 
-    @echo "Uploading $charm"
+    echo "Uploading $charm"
     revision=$(charmcraft upload "$charm" --format json | yq -r '.revision')
-    @echo "Releasing $charm_name revision $revision to $channel"
+    echo "Releasing $charm_name revision $revision to $channel"
     charmcraft release "$charm_name" --revision "$revision" --channel "$channel"
 
 # publish a snap to the Snap Store
@@ -508,7 +508,7 @@ publish-rock:
             exit 1
         fi
 
-        @echo "importing $rock_file as ${prefix}:${version}-${arch}"
+        echo "importing $rock_file as ${prefix}:${version}-${arch}"
         sudo rockcraft.skopeo --insecure-policy copy \
             oci-archive:"$rock_file" \
             docker-daemon:"${prefix}:${version}-${arch}"

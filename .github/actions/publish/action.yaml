@@ -37,6 +37,11 @@ inputs:
     required: false
     default: latest
 
+  python-publish-enabled:
+    description: Enable python package publishing.
+    required: false
+    default: "false"
+
 runs:
   using: composite
   steps:
@@ -54,3 +59,5 @@ runs:
         PUBLISH_CHARM: ${{ inputs['charm-publish-enabled'] }}
         CHARM_ARCHITECTURES: ${{ inputs['charm-architectures'] }}
         CHARM_CHANNEL: ${{ inputs['charm-channel'] }}
+
+        PUBLISH_PYTHON: ${{ inputs['python-publish-enabled'] }}
