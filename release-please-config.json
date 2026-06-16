@@ -7,4 +7,4 @@
       "pull-request-title-pattern": "ci: release ${version}"
     }
   }
-} 
+}

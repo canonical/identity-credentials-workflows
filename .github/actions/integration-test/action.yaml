@@ -1,0 +1,64 @@
+name: integration-test
+description: Run integration tests through just.
+inputs:
+  working-directory:
+    description: Project path to test.
+    required: false
+    default: .
+
+  charm-enabled:
+    description: Whether to run charm integration tests.
+    required: false
+    default: "false"
+  charm-file-name:
+    description: Charm file name for the charm that will be tested.
+    required: false
+    default: ""
+
+  snap-enabled:
+    description: Whether to run snap integration tests.
+    required: false
+    default: "false"
+  snap-file-name:
+    description: Snap file name for the snap that will be tested.
+    required: false
+    default: ""
+  snap-service-name:
+    description: Snap service name that will be started.
+    required: false
+    default: ""
+  snap-service-port:
+    description: Snap service port to validate that the service is live.
+    required: false
+    default: ""
+  snap-executable-name:
+    description: Snap executable name that will be available upon successful install.
+    required: false
+    default: ""
+
+  rock-enabled:
+    description: Whether to run rock integration tests.
+    required: false
+    default: "false"
+  rock-file-name:
+    description: Rock file name for the rock that will be tested.
+    default: ""
+
+runs:
+  using: composite
+  steps:
+    - name: Run integration tests
+      shell: bash
+      run: just "working-directory=${{ inputs['working-directory'] }}" test-integration
+      env:
+        CHARM_ENABLED: ${{ inputs['charm-enabled'] }}
+        CHARM_FILE_NAME: ${{ inputs['charm-file-name'] }}
+
+        SNAP_ENABLED: ${{ inputs['snap-enabled'] }}
+        SNAP_FILE_NAME: ${{ inputs['snap-file-name'] }}
+        SNAP_SERVICE_NAME: ${{ inputs['snap-service-name'] }}
+        SNAP_SERVICE_PORT: ${{ inputs['snap-service-port'] }}
+        SNAP_EXECUTABLE_NAME: ${{ inputs['snap-executable-name'] }}
+
+        ROCK_ENABLED: ${{ inputs['rock-enabled'] }}
+        ROCK_FILE_NAME: ${{ inputs['rock-file-name'] }}

@@ -1,0 +1,46 @@
+name: build
+description: Run shared build scripts through just.
+inputs:
+  working-directory:
+    description: the directory to run builds in
+    required: false
+    default: .
+
+  go-enabled:
+    description: whether to build a go package
+    required: false
+    default: "false"
+  python-enabled:
+    description: whether to build a python package
+    required: false
+    default: "false"
+  typescript-enabled:
+    description: whether to build a typescript package
+    required: false
+    default: "false"
+  charmcraft-enabled:
+    description: whether to build a charm
+    required: false
+    default: "false"
+  snapcraft-enabled:
+    description: whether to build a snap
+    required: false
+    default: "false"
+  rockcraft-enabled:
+    description: whether to build a rock
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Run builds
+      shell: bash
+      run: just "working-directory=${{ inputs['working-directory'] }}" build
+      env:
+        GO_ENABLED: ${{ inputs['go-enabled'] }}
+        PYTHON_ENABLED: ${{ inputs['python-enabled'] }}
+        TYPESCRIPT_ENABLED: ${{ inputs['typescript-enabled'] }}
+        CHARMCRAFT_ENABLED: ${{ inputs['charmcraft-enabled'] }}
+        SNAPCRAFT_ENABLED: ${{ inputs['snapcraft-enabled'] }}
+        ROCKCRAFT_ENABLED: ${{ inputs['rockcraft-enabled'] }}

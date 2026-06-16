@@ -1,44 +1,22 @@
 # identity-credentials-workflows
 
-GitHub workflows for the Identity (Credentials) team.
+This repository is the single source of truth for all development workflows and configurations for the identity TLS team. This includes GitHub Actions workflows, Renovate configuration, and any other development related configurations.
 
-## Usage
+## Repos
 
-Downstream repositories should reference workflows using release tags
-(e.g. `@v1.3.1`) or `@main` for bleeding-edge features.
+A list of all Identity (TLS) repositories can be found under the `identity-team` [topic](https://github.com/search?q=org%3Acanonical%20topic%3Aidentity-team&type=repositories) on GitHub.
 
-Build workflows are invoked **once per architecture**. The caller specifies
-`arch` and `runner` explicitly:
+## GitHub Workflows
 
-```yaml
-jobs:
-  build-amd64:
-    uses: canonical/identity-credentials-workflows/.github/workflows/charm-build.yaml@main
-    with:
-      arch: amd64
-      runner: '"ubuntu-24.04"'
-      path: k8s
-      artifact-suffix: k8s
+The workflows in the repositories are common processes we've adapted for our software development lifecycle.
 
-  build-arm64:
-    uses: canonical/identity-credentials-workflows/.github/workflows/charm-build.yaml@main
-    with:
-      arch: arm64
-      runner: '["self-hosted", "linux", "ARM64", "medium", "noble"]'
-      path: k8s
-      artifact-suffix: k8s
+Workflows with a `__` prefix are workflows for this repository. They are not intended to be used in other repositories.
 
-  publish:
-    needs: [build-amd64, build-arm64]
-    uses: canonical/identity-credentials-workflows/.github/workflows/charm-publish.yaml@main
-    with:
-      artifacts-key: ${{ github.sha }}-build-k8s-*
-      path: k8s
-    secrets:
-      CHARMCRAFT_AUTH: ${{ secrets.CHARMCRAFT_AUTH }}
-```
+Workflows with a `_` prefix are private workflows that are used by the public workflows.
 
-## Supported workflow types
+Workflows without a prefix are public workflows that are intended to be used in other repositories.
+
+### Supported workflow types
 
 | Category     | Workflows                                                                                          | Description                                                |
 | ------------ | -------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
@@ -53,21 +31,48 @@ Build workflows take explicit `arch` and `runner` inputs — callers invoke
 them once per target architecture. Publish workflows collect all built
 artifacts using a glob pattern.
 
-## Renovate base configuration
+## GitHub Actions
 
-This repository contains a base Renovate configuration. To use it in other
-projects, create a `renovate.json5` file with the following content:
+The actions for continuous integration are designed to adapt to any of our projects' structures in an opinionated way. Tools and configuration will be picked up from the project itself to avoid any CI drift.
 
-```json
-{
-  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": [
-    "https://raw.githubusercontent.com/canonical/identity-credentials-workflows/refs/heads/main/renovate.json5"
-  ]
-}
-```
+We use a common.just file from [just.systems](https://just.systems/) to keep all of our actions consistent in our repos. The actions will call predetermined just recipes for all repos. Overrides can be used to customize the actions for a specific repo.
 
-## Repos
+There are 6 main just recipes that our GitHub Actions call for CI tasks (plus `setup` for installing toolchains). They are:
 
-A list of all Identity (Credentials) repositories can be found under the
-`identity-team` [topic](https://github.com/search?q=org%3Acanonical%20topic%3Aidentity-team&type=repositories) on GitHub.
+### Code Health
+
+The code health script is designed to do linting, formatting and other types of static analysis on the code. The only exclusions are security scanning tools because of their complex dependencies and configurations. The tools used should be defined in code, and the script should only use tools like `tox`, `bun` or other CLI based tools.
+
+### Unit Test
+
+The unit test script is designed to run the unit tests for the project. They should also be defined in code and invoked using a CLI based tool.
+
+### Security Scan
+
+The security scan script is designed to run security scanning on the code. Unlike code health tools, security scanning tools target specific vulnerabilities or problems in the repo that may or may not be independent from the code itself.
+
+### Build
+
+The build script is designed to build the project. This is the build that will be staged for release.
+
+All build artifacts should be stored with the name `{{project_name}}-{{arch}}-{{type}}.{{filetype}}`. The moving and renaming of the final artifacts for integration testing and release is left up to the workflow implementing the action.
+
+### Integration Test
+
+The integration test script is designed to run the integration tests for the project. It usually requires the built artifact to run as well as the use of a CLI tool. Any test that requires the built artifact should inherently be considered an integration test.
+
+### Publish
+
+Unlike the other actions, the publish script should not run in the PR, but after a merge to a main branch. It expects the appropriate secrets to be available in the repository to be able to release the project.
+
+### Working with the justfile
+
+You can override the exact steps you need to override in the justfile, and call the original steps via the module prefix. There is an example justfile in the `examples/` folder.
+
+## Releases
+
+We use release-please to do releases for all of our projects including this one. A basic configuration is defined in `release-please-config.json`.
+
+## Renovate
+
+Renovate is used to keep our dependencies up to date. Renovate is configured in `renovate.json5` and a shared configuration is defined in `identity-credentials-workflows` repo.

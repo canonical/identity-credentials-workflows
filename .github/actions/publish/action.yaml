@@ -1,0 +1,63 @@
+name: publish
+description: Publish an artifact.
+inputs:
+  working-directory:
+    description: Working directory to run the publish command in.
+    required: false
+    default: .
+
+  snap-publish-enabled:
+    description: Enable snap publishing.
+    required: false
+    default: "false"
+  snap-track:
+    description: Snap track.
+    required: false
+    default: latest
+
+  rock-publish-enabled:
+    description: Enable rock publishing.
+    required: false
+    default: "false"
+  rock-architectures:
+    description: space separated list of rock architectures.
+    required: false
+    default: "amd64"
+
+  charm-publish-enabled:
+    description: Enable charm publishing.
+    required: false
+    default: "false"
+  charm-architectures:
+    description: space separated list of charm architectures.
+    required: false
+    default: "amd64"
+  charm-channel:
+    description: Charmhub channel.
+    required: false
+    default: latest
+
+  python-publish-enabled:
+    description: Enable python package publishing.
+    required: false
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - name: Release artifact
+      shell: bash
+      run: |
+        just "working-directory=${{ inputs['working-directory'] }}" publish
+      env:
+        PUBLISH_SNAP: ${{ inputs['snap-publish-enabled'] }}
+        SNAP_TRACK: ${{ inputs['snap-track'] }}
+
+        PUBLISH_ROCK: ${{ inputs['rock-publish-enabled'] }}
+        ROCK_ARCHITECTURES: ${{ inputs['rock-architectures'] }}
+
+        PUBLISH_CHARM: ${{ inputs['charm-publish-enabled'] }}
+        CHARM_ARCHITECTURES: ${{ inputs['charm-architectures'] }}
+        CHARM_CHANNEL: ${{ inputs['charm-channel'] }}
+
+        PUBLISH_PYTHON: ${{ inputs['python-publish-enabled'] }}

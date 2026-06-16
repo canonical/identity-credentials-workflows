@@ -1,0 +1,57 @@
+name: code-quality
+description: Run shared code quality checks through just.
+inputs:
+  working-directory:
+    description: the directory to run code quality checks in
+    required: false
+    default: .
+
+  go-enabled:
+    description: enable code health tools for golang
+    required: false
+    default: "false"
+  python-enabled:
+    description: enable code health tools for python
+    required: false
+    default: "false"
+  typescript-enabled:
+    description: enable code health tools for typescript
+    required: false
+    default: "false"
+  charmcraft-enabled:
+    description: enable code health tools for the charmcraft.yaml file
+    required: false
+    default: "false"
+  snapcraft-enabled:
+    description: enable code health tools for the snapcraft.yaml file
+    required: false
+    default: "false"
+  rockcraft-enabled:
+    description: enable code health tools for the rockcraft.yaml file
+    required: false
+    default: "false"
+
+  grafana-enabled:
+    description: enable code health tools for grafana dashboards
+    required: false
+    default: "false"
+  grafana-dashboard-file-path:
+    description: the path to the grafana dashboard file to run code quality checks on
+    required: false
+    default: "dashboard.json"
+runs:
+  using: composite
+  steps:
+    - name: Run code quality checks
+      shell: bash
+      run: just "working-directory=${{ inputs['working-directory'] }}" code-health
+      env:
+        GO_ENABLED: ${{ inputs['go-enabled'] }}
+        PYTHON_ENABLED: ${{ inputs['python-enabled'] }}
+        TYPESCRIPT_ENABLED: ${{ inputs['typescript-enabled'] }}
+
+        CHARMCRAFT_ENABLED: ${{ inputs['charmcraft-enabled'] }}
+        SNAPCRAFT_ENABLED: ${{ inputs['snapcraft-enabled'] }}
+        ROCKCRAFT_ENABLED: ${{ inputs['rockcraft-enabled'] }}
+        GRAFANA_ENABLED: ${{ inputs['grafana-enabled'] }}
+        GRAFANA_DASHBOARD_FILE_PATH: ${{ inputs['grafana-dashboard-file-path'] }}

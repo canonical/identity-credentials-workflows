@@ -1,0 +1,26 @@
+name: security-scan
+description: "Run shared security scans through just (requires security-events: read and security-events: write permissions)."
+inputs:
+  working-directory:
+    description: the directory to run security scans in
+    required: false
+    default: .
+
+  kev-scan-enabled:
+    description: Enable scanning for KEVs in the repository
+    required: false
+    default: "false"
+  go-scan-enabled:
+    description: Whether to run configured security scans for Golang projects.
+    required: false
+    default: "false"
+runs:
+  using: composite
+  steps:
+    - name: run security scan
+      shell: bash
+      run: just "working-directory=${{ inputs['working-directory'] }}" security-scan
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        KEV_SCAN_ENABLED: ${{ inputs['kev-scan-enabled'] }}
+        GO_SCAN_ENABLED: ${{ inputs['go-scan-enabled'] }}

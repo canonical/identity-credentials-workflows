@@ -4,23 +4,22 @@ on:
   workflow_call:
     inputs:
       project:
-        description: 'The name of the TiCS project to submit the analysis to'
+        description: "The name of the TiCS project to submit the analysis to"
         required: true
         type: string
       dir:
-        description: 'The directory where the code and tox.ini is located, if not the root of the repository'
+        description: "The directory where the code and tox.ini is located, if not the root of the repository"
         required: false
-        default: '.'
+        default: "."
         type: string
       fetch_libs:
-        description: 'Whether to fetch the charm libs defined in charmcraft.yaml'
+        description: "Whether to fetch the charm libs defined in charmcraft.yaml"
         required: false
         type: boolean
         default: false
     secrets:
       TICSAUTHTOKEN:
         required: true
-
 
 jobs:
   analyze:
