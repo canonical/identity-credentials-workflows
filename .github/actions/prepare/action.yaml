@@ -2,11 +2,17 @@ name: prepare-runner
 description: prepare the runner by fetching the repo and configuring the justfiles
 author: Kayra
 
+inputs:
+  workflows-ref:
+    description: The git ref to fetch from the identity-credentials-workflows repository
+    required: false
+    default: ""
+
 runs:
   using: composite
   steps:
     - name: install just
-      uses: just-setup/just-setup@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
+      uses: extractions/setup-just@53165ef7e734c5c07cb06b3c8e7b647c5aa16db3 # v4
       with:
         just-version: 1.51.0
 
@@ -16,7 +22,7 @@ runs:
       uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       with:
         repository: "canonical/identity-credentials-workflows"
-        ref: ${{ github.action_ref }}
+        ref: ${{ inputs.workflows-ref }}
         path: shared-workflows
         sparse-checkout-cone-mode: false
         sparse-checkout: |
@@ -26,7 +32,7 @@ runs:
       shell: bash
       run: |
         mkdir -p scripts
-        cp -rn shared-workflows/scripts/* scripts/
+        cp --update=none -r shared-workflows/scripts/* scripts/
 
         touch justfile
         cat shared-workflows/common.just justfile > justfile.tmp && mv justfile.tmp justfile
