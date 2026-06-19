@@ -1,0 +1,9 @@
+name: test actions
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup machine
+        uses: ./.github/actions/prepare
