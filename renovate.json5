@@ -1,11 +1,10 @@
 {
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
-  extends: ["config:recommended", ":disableRateLimiting", ":semanticCommits"],
-  automerge: true,
-  automergeStrategy: "squash",
-  automergeType: "pr",
-  platformAutomerge: true,
-  schedule: ["at any time"],
+  extends: ["config:recommended", ":semanticCommits"],
+  automerge: false,
+  schedule: ["before 5am on Monday and Thursday"],
+  prConcurrentLimit: 5,
+  prHourlyLimit: 2,
   updatePinned: false,
   lockFileMaintenance: {
     enabled: false,
@@ -19,6 +18,7 @@
       matchManagers: ["pep621"],
       rangeStrategy: "bump",
       groupName: "Python dependencies",
+      separateMajorMinor: false,
     },
     {
       // Disable updating Python, should be done when updating the Ubuntu base
@@ -39,11 +39,13 @@
     },
     {
       matchManagers: ["github-actions"],
-      groupName: "GitHub actions",
+      groupName: "GitHub Actions",
+      separateMajorMinor: false,
     },
     {
       matchManagers: ["terraform"],
       groupName: "Terraform",
+      separateMajorMinor: false,
     },
   ],
 }
