@@ -16,7 +16,6 @@ runs:
       uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       with:
         repository: "canonical/identity-credentials-workflows"
-        ref: ${{ github.action_ref }}
         path: shared-workflows
         sparse-checkout-cone-mode: false
         sparse-checkout: |
