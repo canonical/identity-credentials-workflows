@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.1](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.0...v3.1.1) (2026-06-19)
+
+
+### Bug Fixes
+
+* use correct source for installing just action ([#100](https://github.com/canonical/identity-credentials-workflows/issues/100)) ([094a96f](https://github.com/canonical/identity-credentials-workflows/commit/094a96ff8824ec84376899bba8d82aa7cb26928b))
+
 ## [3.1.0](https://github.com/canonical/identity-credentials-workflows/compare/v3.0.0...v3.1.0) (2026-06-19)
 
 
