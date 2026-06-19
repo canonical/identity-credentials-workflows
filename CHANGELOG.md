@@ -1,5 +1,16 @@
 # Changelog
 
+## [3.0.0](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.6...v3.0.0) (2026-06-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* introduce justfiles and actions ([#75](https://github.com/canonical/identity-credentials-workflows/issues/75))
+
+### Features
+
+* introduce justfiles and actions ([#75](https://github.com/canonical/identity-credentials-workflows/issues/75)) ([a5f90ca](https://github.com/canonical/identity-credentials-workflows/commit/a5f90cab93cb8cd0189c272b2b056f0371d7aad6))
+
 ## [2.0.6](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.5...v2.0.6) (2026-06-10)
 
 
