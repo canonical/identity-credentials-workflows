@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.0](https://github.com/canonical/identity-credentials-workflows/compare/v3.0.0...v3.1.0) (2026-06-19)
+
+
+### Features
+
+* Stricten renovate config ([#98](https://github.com/canonical/identity-credentials-workflows/issues/98)) ([27fee0c](https://github.com/canonical/identity-credentials-workflows/commit/27fee0c333dcb54ded1bf9a9e832c04198488ffa))
+
 ## [3.0.0](https://github.com/canonical/identity-credentials-workflows/compare/v2.0.6...v3.0.0) (2026-06-16)
 
 
