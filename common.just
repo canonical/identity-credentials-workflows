@@ -149,13 +149,27 @@ code-health:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "${GO_ENABLED:-false}" = "true" ] && {{ j }} code-health-go
-    [ "${PYTHON_ENABLED:-false}" = "true" ] && {{ j }} code-health-python
-    [ "${TYPESCRIPT_ENABLED:-false}" = "true" ] && {{ j }} code-health-typescript
-    [ "${CHARMCRAFT_ENABLED:-false}" = "true" ] && {{ j }} lint-charmcraft
-    [ "${SNAPCRAFT_ENABLED:-false}" = "true" ] && {{ j }} lint-snapcraft
-    [ "${ROCKCRAFT_ENABLED:-false}" = "true" ] && {{ j }} lint-rockcraft
-    [ "${GRAFANA_ENABLED:-false}" = "true" ] && {{ j }} lint-grafana
+    if [ "${GO_ENABLED:-false}" = "true" ]; then
+        {{ j }} code-health-go
+    fi
+    if [ "${PYTHON_ENABLED:-false}" = "true" ]; then
+        {{ j }} code-health-python
+    fi
+    if [ "${TYPESCRIPT_ENABLED:-false}" = "true" ]; then
+        {{ j }} code-health-typescript
+    fi
+    if [ "${CHARMCRAFT_ENABLED:-false}" = "true" ]; then
+        {{ j }} lint-charmcraft
+    fi
+    if [ "${SNAPCRAFT_ENABLED:-false}" = "true" ]; then
+        {{ j }} lint-snapcraft
+    fi
+    if [ "${ROCKCRAFT_ENABLED:-false}" = "true" ]; then
+        {{ j }} lint-rockcraft
+    fi
+    if [ "${GRAFANA_ENABLED:-false}" = "true" ]; then
+        {{ j }} lint-grafana
+    fi
 
 [private]
 code-health-go: setup-go
@@ -228,9 +242,15 @@ test-unit:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "${GO_ENABLED:-false}" = "true" ] && {{ j }} test-unit-go
-    [ "${PYTHON_ENABLED:-false}" = "true" ] && {{ j }} test-unit-python
-    [ "${TYPESCRIPT_ENABLED:-false}" = "true" ] && {{ j }} test-unit-typescript
+    if [ "${GO_ENABLED:-false}" = "true" ]; then
+        {{ j }} test-unit-go
+    fi
+    if [ "${PYTHON_ENABLED:-false}" = "true" ]; then
+        {{ j }} test-unit-python
+    fi
+    if [ "${TYPESCRIPT_ENABLED:-false}" = "true" ]; then
+        {{ j }} test-unit-typescript
+    fi
 
 [private]
 test-unit-go: setup-go
@@ -263,8 +283,12 @@ security-scan:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "${GO_SCAN_ENABLED:-false}" = "true" ] && {{ j }} secscan-go
-    [ "${KEV_SCAN_ENABLED:-false}" = "true" ] && {{ j }} secscan-identify-kevs
+    if [ "${GO_SCAN_ENABLED:-false}" = "true" ]; then
+        {{ j }} secscan-go
+    fi
+    if [ "${KEV_SCAN_ENABLED:-false}" = "true" ]; then
+        {{ j }} secscan-identify-kevs
+    fi
 
 [private]
 secscan-identify-kevs:
@@ -318,12 +342,24 @@ build:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "${GO_ENABLED:-false}" = "true" ] && {{ j }} build-go
-    [ "${PYTHON_ENABLED:-false}" = "true" ] && {{ j }} build-python
-    [ "${TYPESCRIPT_ENABLED:-false}" = "true" ] && {{ j }} build-typescript
-    [ "${CHARMCRAFT_ENABLED:-false}" = "true" ] && {{ j }} build-charm
-    [ "${SNAPCRAFT_ENABLED:-false}" = "true" ] && {{ j }} build-snap
-    [ "${ROCKCRAFT_ENABLED:-false}" = "true" ] && {{ j }} build-rock
+    if [ "${GO_ENABLED:-false}" = "true" ]; then
+        {{ j }} build-go
+    fi
+    if [ "${PYTHON_ENABLED:-false}" = "true" ]; then
+        {{ j }} build-python
+    fi
+    if [ "${TYPESCRIPT_ENABLED:-false}" = "true" ]; then
+        {{ j }} build-typescript
+    fi
+    if [ "${CHARMCRAFT_ENABLED:-false}" = "true" ]; then
+        {{ j }} build-charm
+    fi
+    if [ "${SNAPCRAFT_ENABLED:-false}" = "true" ]; then
+        {{ j }} build-snap
+    fi
+    if [ "${ROCKCRAFT_ENABLED:-false}" = "true" ]; then
+        {{ j }} build-rock
+    fi
 
 [private]
 build-python:
@@ -377,9 +413,15 @@ test-integration:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "${CHARM_ENABLED:-false}" = "true" ] && {{ j }} test-integration-charm
-    [ "${SNAP_ENABLED:-false}" = "true" ] && {{ j }} test-integration-snap
-    [ "${ROCK_ENABLED:-false}" = "true" ] && {{ j }} test-integration-rock
+    if [ "${CHARM_ENABLED:-false}" = "true" ]; then
+        {{ j }} test-integration-charm
+    fi
+    if [ "${SNAP_ENABLED:-false}" = "true" ]; then
+        {{ j }} test-integration-snap
+    fi
+    if [ "${ROCK_ENABLED:-false}" = "true" ]; then
+        {{ j }} test-integration-rock
+    fi
 
 [private]
 test-integration-charm:
@@ -443,10 +485,18 @@ publish:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    [ "${PUBLISH_CHARM:-false}" = "true" ] && {{ j }} publish-charm
-    [ "${PUBLISH_SNAP:-false}" = "true" ] && {{ j }} publish-snap
-    [ "${PUBLISH_ROCK:-false}" = "true" ] && {{ j }} publish-rock
-    [ "${PUBLISH_PYTHON:-false}" = "true" ] && {{ j }} publish-python
+    if [ "${PUBLISH_CHARM:-false}" = "true" ]; then
+        {{ j }} publish-charm
+    fi
+    if [ "${PUBLISH_SNAP:-false}" = "true" ]; then
+        {{ j }} publish-snap
+    fi
+    if [ "${PUBLISH_ROCK:-false}" = "true" ]; then
+        {{ j }} publish-rock
+    fi
+    if [ "${PUBLISH_PYTHON:-false}" = "true" ]; then
+        {{ j }} publish-python
+    fi
 
 # publish a charm to CharmHub
 [private]
