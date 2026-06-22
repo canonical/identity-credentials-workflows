@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.2](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.1...v3.1.2) (2026-06-22)
+
+
+### Bug Fixes
+
+* prevent recipes from exiting 1 when the last flag is disabled ([3121a90](https://github.com/canonical/identity-credentials-workflows/commit/3121a9082ef9c844f2d52e17b3be380895be2d1c))
+
 ## [3.1.1](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.0...v3.1.1) (2026-06-19)
 
 
