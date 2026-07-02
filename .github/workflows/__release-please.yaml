@@ -5,28 +5,6 @@ on:
   push:
     branches:
       - main
-  workflow_call:
-    inputs:
-      target-branch:
-        description: Target branch for release
-        required: false
-        default: main
-        type: string
-      config-file:
-        description: Path to release-please-config.json
-        required: false
-        default: release-please-config.json
-        type: string
-      manifest-file:
-        description: Path to .release-please-manifest.json
-        required: false
-        default: .release-please-manifest.json
-        type: string
-      include-component-in-tag:
-        description: Include component in release tag (for track branches and mono-repos)
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: write
