@@ -177,7 +177,7 @@ code-health-go: setup-go
     set -euo pipefail
     echo "linting Golang code..."
 
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.12.2
+    sudo snap install golangci-lint --classic --channel=latest/stable
     go vet ./...
     golangci-lint run ./...
 
