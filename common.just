@@ -364,13 +364,15 @@ build-snap:
     set -euo pipefail
 
     snapcraft pack --verbose
+    mv "$(ls *.snap 2>/dev/null | head -n 1)" "$(ls *.snap 2>/dev/null | head -n 1 | sed -E 's/^([^_]+)_[^_]+_([^_]+)\.snap$/\1-\2.snap/')"
 
 [private]
 build-rock:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    rockcraft pack
+    rockcraft pack --verbose
+    mv "$(ls *.rock 2>/dev/null | head -n 1)" "$(ls *.rock 2>/dev/null | head -n 1 | sed -E 's/^([^_]+)_[^_]+_([^_]+)\.rock$/\1-\2.rock/')"
 
 # =============================================================================
 # Integration Testing
