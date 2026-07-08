@@ -32,7 +32,7 @@ runs:
       shell: bash
       run: |
         mkdir -p scripts
-        cp --update=none -r shared-workflows/scripts/* scripts/
+        cp -rn shared-workflows/scripts/* scripts/
 
         touch justfile
         cat shared-workflows/common.just justfile > justfile.tmp && mv justfile.tmp justfile
