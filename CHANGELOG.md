@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.3](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.2...v3.1.3) (2026-07-20)
+
+
+### Bug Fixes
+
+* print resulting folder for builds ([#106](https://github.com/canonical/identity-credentials-workflows/issues/106)) ([872e986](https://github.com/canonical/identity-credentials-workflows/commit/872e9860f8a860e861576ecbf5aef119d31fb5b6))
+
 ## [3.1.2](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.1...v3.1.2) (2026-06-22)
 
 
