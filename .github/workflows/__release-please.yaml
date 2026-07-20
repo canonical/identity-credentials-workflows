@@ -18,8 +18,8 @@ jobs:
         id: release
         uses: googleapis/release-please-action@a02a34c4d625f9be7cb89156071d8567266a2445 # v4
         with:
-          token: ${{ secrets.PAT_TOKEN || github.token }}
-          target-branch: ${{ inputs.target-branch }}
-          config-file: ${{ inputs.config-file }}
-          manifest-file: ${{ inputs.manifest-file }}
-          include-component-in-tag: ${{ inputs.include-component-in-tag }}
+          token: ${{ github.token }}
+          target-branch: main
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+          include-component-in-tag: false

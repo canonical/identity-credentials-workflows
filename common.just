@@ -17,28 +17,68 @@ help:
 # Install Dependencies
 # =============================================================================
 
-# install and bootstrap dependencies
+# install and bootstrap dependencies via a generated concierge configuration
 setup:
     #!/usr/bin/env bash
     set -euo pipefail
-    echo "installing dependencies..."
+    echo "installing requested toolchains: ${TOOLCHAINS:-none}"
+
+    sudo snap install yq
+
+    config="concierge.yaml"
+    touch "$config"
 
     toolchains=(${TOOLCHAINS:-})
     for toolchain in "${toolchains[@]}"; do
+        echo "installing toolchain: $toolchain"
         case "$toolchain" in
-            go) {{ j }} setup-go ;;
-            python) {{ j }} setup-python ;;
-            typescript) {{ j }} setup-typescript ;;
-            charmcraft) {{ j }} setup-charmcraft ;;
-            snapcraft) {{ j }} setup-snapcraft ;;
-            rockcraft) {{ j }} setup-rockcraft ;;
-            juju-k8s) {{ j }} setup-juju-k8s ;;
-            juju-machine) {{ j }} setup-juju-machine ;;
+            go)
+                go_version="${GO_VERSION:-}"
+                if [ -z "$go_version" ] && [ -f "go.mod" ]; then
+                    go_version=$(grep -m1 '^go[[:space:]]' go.mod | awk '{print $2}' | cut -d. -f1,2)
+                    echo "Detected Go version from go.mod: $go_version"
+                fi
+                yq -i ".host.snaps.go.channel = \"${go_version:-latest}/stable\"" "$config"
+                ;;
+            python)
+                yq -i '.host.snaps.astral-uv.channel = "latest/stable"' "$config"
+                ;;
+            typescript)
+                sudo apt-get update
+                sudo apt-get install -y unzip
+                curl -fsSL https://bun.com/install | bash
+                bun --version
+                ;;
+            charmcraft)
+                yq -i '.providers.lxd.enable = true' "$config"
+                [ -n "${LXD_CHANNEL:-}" ] && yq -i ".providers.lxd.channel = \"${LXD_CHANNEL}\"" "$config"
+                yq -i ".host.snaps.charmcraft.channel = \"${CHARMCRAFT_CHANNEL:-latest/stable}\"" "$config"
+                ;;
+            snapcraft)
+                yq -i '.providers.lxd.enable = true' "$config"
+                [ -n "${LXD_CHANNEL:-}" ] && yq -i ".providers.lxd.channel = \"${LXD_CHANNEL}\"" "$config"
+                yq -i ".host.snaps.snapcraft.channel = \"${SNAPCRAFT_CHANNEL:-latest/stable}\"" "$config"
+                ;;
+            rockcraft)
+                yq -i '.providers.lxd.enable = true' "$config"
+                [ -n "${LXD_CHANNEL:-}" ] && yq -i ".providers.lxd.channel = \"${LXD_CHANNEL}\"" "$config"
+                yq -i ".host.snaps.rockcraft.channel = \"${ROCKCRAFT_CHANNEL:-latest/stable}\"" "$config"
+                ;;
+            juju-k8s)
+                yq -i '.providers.k8s.enable = true | .providers.k8s.bootstrap = true' "$config"
+                yq -i '.providers.lxd.enable = true' "$config"
+                [ -n "${K8S_CHANNEL:-}" ] && yq -i ".providers.k8s.channel = \"${K8S_CHANNEL}\"" "$config"
+                [ -n "${JUJU_CHANNEL:-}" ] && yq -i ".juju.channel = \"${JUJU_CHANNEL}\"" "$config"
+                ;;
+            juju-machine)
+                yq -i '.providers.lxd.enable = true | .providers.lxd.bootstrap = true' "$config"
+                [ -n "${LXD_CHANNEL:-}" ] && yq -i ".providers.lxd.channel = \"${LXD_CHANNEL}\"" "$config"
+                [ -n "${JUJU_CHANNEL:-}" ] && yq -i ".juju.channel = \"${JUJU_CHANNEL}\"" "$config"
+                ;;
             *) echo "unknown toolchain: $toolchain" >&2; exit 1;;
         esac
     done
 
-    sudo snap install yq
     extra_snaps=(${EXTRA_SNAPS:-})
     for snap in "${extra_snaps[@]}"; do
         sudo snap install "$snap" || true
@@ -49,96 +89,24 @@ setup:
         sudo apt-get install -y $EXTRA_DEBS
     fi
 
-[private]
-setup-go:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    go_version="${GO_VERSION:-}"
-    if [ -z "$go_version" ] && [ -f "go.mod" ]; then
-        go_version=$(grep -m1 '^go[[:space:]]' go.mod | awk '{print $2}' | cut -d. -f1,2)
-        echo "Detected Go version from go.mod: $go_version"
+    if [ -s "$config" ]; then
+        cat "$config"
+        sudo snap install concierge --classic --channel=latest/stable
+        sudo concierge prepare -c "$config"
     fi
 
-    sudo snap install go --classic --channel="${go_version:-latest}/stable"
-    go version
 
 [private]
-setup-typescript:
+install-bun:
     #!/usr/bin/env bash
     set -euo pipefail
-    sudo apt update
-    sudo apt install -y unzip
-
-    curl -fsSL https://bun.com/install | bash
-    bun --version
     bun install
 
 [private]
-setup-python:
+install-python:
     #!/usr/bin/env bash
     set -euo pipefail
-    sudo snap install astral-uv --classic
-
-    python_version="${PYTHON_VERSION:-}"
-    if [ -z "$python_version" ] && [ -f "pyproject.toml" ]; then
-        python_version=$(grep 'requires-python' pyproject.toml | grep -oE '[0-9]+\.[0-9]+' | head -1)
-        if [ -n "$python_version" ]; then
-            echo "Detected Python version from pyproject.toml: $python_version"
-        fi
-    fi
-
-    if [ -n "$python_version" ]; then
-        uv python install "$python_version"
-    else
-        uv python install
-    fi
-
-[private]
-setup-charmcraft:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    sudo snap install charmcraft --classic --channel=${CHARMCRAFT_CHANNEL:-latest/stable}
-    charmcraft version
-
-[private]
-setup-snapcraft:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    sudo snap install snapcraft --classic --channel=${SNAPCRAFT_CHANNEL:-latest/stable}
-    snapcraft version
-
-[private]
-setup-rockcraft:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    sudo snap install rockcraft --classic --channel=${ROCKCRAFT_CHANNEL:-latest/stable}
-    rockcraft version
-
-[private]
-setup-juju-k8s:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    sudo snap install concierge --classic --channel=latest/stable
-    args=("-p" "k8s")
-    [ -n "${JUJU_CHANNEL:-}" ] && args+=(--juju-channel "${JUJU_CHANNEL}")
-    [ -n "${K8S_CHANNEL:-}" ] && args+=(--k8s-channel "${K8S_CHANNEL}")
-    sudo concierge prepare "${args[@]}"
-
-[private]
-setup-juju-machine:
-    #!/usr/bin/env bash
-    set -euo pipefail
-
-    sudo snap install concierge --classic --channel=latest/stable
-    args=("-p" "machine")
-    [ -n "${JUJU_CHANNEL:-}" ] && args+=(--juju-channel "${JUJU_CHANNEL}")
-    [ -n "${LXD_CHANNEL:-}" ] && args+=(--lxd-channel "${LXD_CHANNEL}")
-    sudo concierge prepare "${args[@]}"
+    uv sync
 
 # =============================================================================
 # Code Health
@@ -172,17 +140,17 @@ code-health:
     fi
 
 [private]
-code-health-go: setup-go
+code-health-go:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "linting Golang code..."
 
-    go install github.com/golangci/golangci-lint/cmd/golangci-lint@v2.12.2
+    sudo snap install golangci-lint --classic --channel=latest/stable
     go vet ./...
     golangci-lint run ./...
 
 [private]
-code-health-typescript: setup-typescript
+code-health-typescript: install-bun
     #!/usr/bin/env bash
     set -euo pipefail
     echo "linting TypeScript code..."
@@ -190,7 +158,7 @@ code-health-typescript: setup-typescript
     bun run code-health
 
 [private]
-code-health-python: setup-python
+code-health-python: install-python
     #!/usr/bin/env bash
     set -euo pipefail
     echo "linting Python code..."
@@ -201,7 +169,7 @@ code-health-python: setup-python
     tox -e format -- --check
 
 [private]
-lint-grafana: setup-go
+lint-grafana:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "linting Grafana dashboards..."
@@ -210,7 +178,7 @@ lint-grafana: setup-go
     dashboard-linter lint "$GRAFANA_DASHBOARD_FILE_PATH" --strict -c grafana.lint
 
 [private]
-lint-charmcraft: setup-charmcraft
+lint-charmcraft:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "linting charm..."
@@ -218,7 +186,7 @@ lint-charmcraft: setup-charmcraft
     charmcraft expand-extensions
 
 [private]
-lint-snapcraft: setup-snapcraft
+lint-snapcraft:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "linting snap..."
@@ -226,7 +194,7 @@ lint-snapcraft: setup-snapcraft
     snapcraft lint
 
 [private]
-lint-rockcraft: setup-rockcraft
+lint-rockcraft:
     #!/usr/bin/env bash
     set -euo pipefail
     echo "linting rock..."
@@ -253,21 +221,21 @@ test-unit:
     fi
 
 [private]
-test-unit-go: setup-go
+test-unit-go:
     #!/usr/bin/env bash
     set -euo pipefail
 
     go test -v -cover ./...
 
 [private]
-test-unit-typescript: setup-typescript
+test-unit-typescript: install-bun
     #!/usr/bin/env bash
     set -euo pipefail
 
     bun run test
 
 [private]
-test-unit-python:
+test-unit-python: install-python
     #!/usr/bin/env bash
     set -euo pipefail
 
@@ -301,7 +269,7 @@ secscan-identify-kevs:
     {{ justfile_directory() }}/scripts/upload-sarif.sh cves.sarif "$GITHUB_REPOSITORY"
 
 [private]
-secscan-go: setup-go
+secscan-go:
     #!/usr/bin/env bash
     set -euo pipefail
 
@@ -362,14 +330,14 @@ build:
     fi
 
 [private]
-build-python:
+build-python: install-python
     #!/usr/bin/env bash
     set -euo pipefail
 
     uv build
 
 [private]
-build-typescript:
+build-typescript: install-bun
     #!/usr/bin/env bash
     set -euo pipefail
 
@@ -396,13 +364,15 @@ build-snap:
     set -euo pipefail
 
     snapcraft pack --verbose
+    mv "$(ls *.snap 2>/dev/null | head -n 1)" "$(ls *.snap 2>/dev/null | head -n 1 | sed -E 's/^([^_]+)_[^_]+_([^_]+)\.snap$/\1-\2.snap/')"
 
 [private]
 build-rock:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    rockcraft pack
+    rockcraft pack --verbose
+    mv "$(ls *.rock 2>/dev/null | head -n 1)" "$(ls *.rock 2>/dev/null | head -n 1 | sed -E 's/^([^_]+)_[^_]+_([^_]+)\.rock$/\1-\2.rock/')"
 
 # =============================================================================
 # Integration Testing
@@ -424,7 +394,7 @@ test-integration:
     fi
 
 [private]
-test-integration-charm:
+test-integration-charm: install-python
     #!/usr/bin/env bash
     set -euo pipefail
     echo "running integration test for $CHARM_FILE_NAME"
@@ -580,7 +550,7 @@ publish-rock:
 
 # publish a package to PyPI
 [private]
-publish-python:
+publish-python: install-python
     #!/usr/bin/env bash
     set -euo pipefail
 
