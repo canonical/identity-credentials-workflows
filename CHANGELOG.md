@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.4](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.3...v3.1.4) (2026-08-26)
+
+
+### Bug Fixes
+
+* bump pinned Trivy version in uv-scan.yaml to v0.74.0 ([#108](https://github.com/canonical/identity-credentials-workflows/issues/108)) ([69b7c37](https://github.com/canonical/identity-credentials-workflows/commit/69b7c3744fb1300523d19a9f6e7d2def40b20462))
+
 ## [3.1.3](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.2...v3.1.3) (2026-07-20)
 
 
