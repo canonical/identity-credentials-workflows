@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.5](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.4...v3.1.5) (2026-09-08)
+
+
+### Bug Fixes
+
+* use juju to download charms for security scans ([#110](https://github.com/canonical/identity-credentials-workflows/issues/110)) ([13c96bf](https://github.com/canonical/identity-credentials-workflows/commit/13c96bf4ab9304227a12ed68536465bae7bd0e05))
+
 ## [3.1.4](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.3...v3.1.4) (2026-08-26)
 
 
