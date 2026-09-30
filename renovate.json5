@@ -47,5 +47,10 @@
       groupName: "Terraform",
       separateMajorMinor: false,
     },
+    {
+      matchManagers: ["terraform"],
+      matchPackageNames: ["juju/juju"],
+      enabled: false,
+    },
   ],
 }
