@@ -75,4 +75,4 @@ We use release-please to do releases for all of our projects including this one.
 
 ## Renovate
 
-Renovate is used to keep our dependencies up to date. Renovate is configured in `renovate.json5` and a shared configuration is defined in `identity-credentials-workflows` repo.
+Renovate is used to keep our dependencies up to date. The shared configuration in `renovate.json5` disables updates to the `juju/juju` Terraform provider while continuing to update other Terraform dependencies. Consumers pin a release tag of this configuration and must update that tag to adopt changes.
