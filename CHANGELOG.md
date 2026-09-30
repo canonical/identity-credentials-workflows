@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.6](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.5...v3.1.6) (2026-09-30)
+
+
+### Bug Fixes
+
+* prevent Renovate from updating Juju Terraform provider ([#112](https://github.com/canonical/identity-credentials-workflows/issues/112)) ([7ff88ec](https://github.com/canonical/identity-credentials-workflows/commit/7ff88ece49266a738314415811a50b3d5b4a9e19))
+
 ## [3.1.5](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.4...v3.1.5) (2026-09-08)
 
 
