@@ -17,6 +17,11 @@ on:
         required: false
         type: boolean
         default: false
+      exclude_paths:
+        description: "Space-separated paths, relative to dir, to remove before the TiCS analysis (e.g. 'tests .vendored')"
+        required: false
+        type: string
+        default: ""
     secrets:
       TICSAUTHTOKEN:
         required: true
@@ -55,6 +60,25 @@ jobs:
         run: |
           mkdir ${{ inputs.dir }}/cover
           mv ${{ inputs.dir }}/coverage.xml ${{ inputs.dir }}/cover/coverage.xml
+
+      - name: Remove excluded paths from TiCS analysis
+        if: ${{ inputs.exclude_paths != '' }}
+        working-directory: ${{ inputs.dir }}
+        env:
+          EXCLUDE_PATHS: ${{ inputs.exclude_paths }}
+        run: |
+          set -euo pipefail
+          set -f
+          for p in $EXCLUDE_PATHS; do
+            case "/$p/" in
+              //*|*/../*|*/./*|/cover/*)
+                echo "::error::Refusing to exclude unsafe path: $p"
+                exit 1
+                ;;
+            esac
+            echo "Excluding $p"
+            rm -rf -- "$p"
+          done
 
       - name: Run TICS analysis with github-action
         uses: tiobe/tics-github-action@016a4d79f3027fe7b4a2901619a58c745ab7cadf # v3
