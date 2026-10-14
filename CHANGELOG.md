@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.1.7](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.6...v3.1.7) (2026-10-14)
+
+
+### Bug Fixes
+
+* TiCS charm library fetching for subdirectory callers ([#114](https://github.com/canonical/identity-credentials-workflows/issues/114)) ([348c9f1](https://github.com/canonical/identity-credentials-workflows/commit/348c9f1e6f1d3f12a0bf79f4230e0b64b1be43b3))
+
 ## [3.1.6](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.5...v3.1.6) (2026-09-30)
 
 
