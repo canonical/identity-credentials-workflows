@@ -42,6 +42,7 @@ jobs:
 
       - name: Fetch charm libraries
         if: ${{ inputs.fetch_libs == true }}
+        working-directory: ${{ inputs.dir }}
         run: |
           charmcraft fetch-libs
 
