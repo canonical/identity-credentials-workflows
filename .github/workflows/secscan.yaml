@@ -99,7 +99,8 @@ jobs:
           echo "please check job ${{ github.run_id }}" >> secscan.result
           gh issue create -R "${{ github.repository }}" \
             --label bug \
-            --title "Release compromised by CVE" \
+            --title "Security scan found vulnerabilities in $ARTIFACT" \
             -F secscan.result
         env:
           GH_TOKEN: ${{ github.token }}
+          ARTIFACT: ${{ matrix.artifact }}

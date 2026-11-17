@@ -20,6 +20,11 @@ on:
         required: false
         default: amd64
         type: string
+      base:
+        description: Ubuntu base to download (ubuntu@22.04, ubuntu@24.04 or ubuntu@26.04). Empty uses Juju's default.
+        required: false
+        default: ""
+        type: string
       create-issue:
         description: Create GitHub issue on CVE findings
         required: false
@@ -55,12 +60,27 @@ jobs:
           TRACK: ${{ inputs.track }}
           CHANNEL: ${{ inputs.channel }}
           ARCH: ${{ inputs.arch }}
+          BASE: ${{ inputs.base }}
         run: |
           set -euo pipefail
+          base_args=()
+          if [[ -n "$BASE" ]]; then
+            case "$BASE" in
+              ubuntu@22.04|ubuntu@24.04|ubuntu@26.04) ;;
+              *) echo "Unsupported Ubuntu base: $BASE" >&2; exit 1 ;;
+            esac
+            base_args=(--base "$BASE")
+          fi
           juju download "$CHARM" \
             --channel "$TRACK/$CHANNEL" \
             --arch "$ARCH" \
-            --filepath charm-under-test.charm
+            "${base_args[@]}" \
+            --filepath charm-under-test.charm 2>&1 | tee juju-download.log
+          # juju download silently falls back to another base if the requested one isn't published
+          if [[ -n "$BASE" ]] && ! grep -qF "base \"$ARCH/${BASE/@//}\"" juju-download.log; then
+            echo "$CHARM is not published for $BASE ($ARCH) in $TRACK/$CHANNEL" >&2
+            exit 1
+          fi
 
       - name: Run secscan
         id: secscan
@@ -82,12 +102,18 @@ jobs:
         if: ${{ inputs.create-issue && steps.secscan.outputs.secscan-return-code != '0' }}
         run: |
           echo "please check job ${{ github.run_id }}" >> secscan.result
+          title="Security scan found vulnerabilities in $CHARM ($TRACK/$CHANNEL, $ARCH${BASE:+, $BASE})"
           gh issue create -R "${{ github.repository }}" \
             --label bug \
-            --title "Release compromised by CVE" \
+            --title "$title" \
             -F secscan.result
         env:
           GH_TOKEN: ${{ github.token }}
+          CHARM: ${{ inputs.charm }}
+          TRACK: ${{ inputs.track }}
+          CHANNEL: ${{ inputs.channel }}
+          ARCH: ${{ inputs.arch }}
+          BASE: ${{ inputs.base }}
 
       - name: Fail job on CVE findings
         if: ${{ inputs.fail-on-cve && steps.secscan.outputs.secscan-return-code != '0' }}
