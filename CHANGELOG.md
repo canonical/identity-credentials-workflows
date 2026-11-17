@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.0](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.7...v3.2.0) (2026-11-17)
+
+
+### Features
+
+* add optional base input to charm-secscan ([#117](https://github.com/canonical/identity-credentials-workflows/issues/117)) ([ccf47fb](https://github.com/canonical/identity-credentials-workflows/commit/ccf47fb9ea06c1785f2a2d07eaf5e5640388ec56))
+
 ## [3.1.7](https://github.com/canonical/identity-credentials-workflows/compare/v3.1.6...v3.1.7) (2026-10-14)
 
 
